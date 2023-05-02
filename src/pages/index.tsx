@@ -5,8 +5,9 @@ import { api } from "@/utils/api";
 import { SignIn, SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 
 const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
   const user = useUser();
+
+  const { data } = api.apps.getAll.useQuery();
   return (
     <>
       <Head>
@@ -19,7 +20,11 @@ const Home: NextPage = () => {
           {!user.isSignedIn && <SignInButton />}
           {!!user.isSignedIn && <SignOutButton />}
         </div>
-        <SignIn path="/sign-in" routing="path" signUpUrl="/sign-up" />
+        <div>
+          {data?.map((app) => (
+            <div key={app.id}>{app.description}</div>
+          ))}
+        </div>
       </main>
     </>
   );
