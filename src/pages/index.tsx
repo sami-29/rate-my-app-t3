@@ -4,6 +4,7 @@ import Head from "next/head";
 import { api } from "@/utils/api";
 
 import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
 
 const Home: NextPage = () => {
   const { data, isLoading } = api.apps.getAll.useQuery();
@@ -16,6 +17,7 @@ const Home: NextPage = () => {
   if (!data) {
     return <div>Something went wrong</div>;
   }
+
   return (
     <>
       <Head>
@@ -26,7 +28,10 @@ const Home: NextPage = () => {
 
       {/* The button to open modal */}
       {!!user.isSignedIn && (
-        <button className="btn-primary btn-circle btn fixed bottom-4 right-4">
+        <Link
+          className="btn-primary btn-circle btn fixed bottom-4 right-4"
+          href={"/CreateApp"}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             height="24px"
@@ -37,7 +42,7 @@ const Home: NextPage = () => {
             <path d="M0 0h24v24H0z" fill="none" />
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
           </svg>
-        </button>
+        </Link>
       )}
     </>
   );
