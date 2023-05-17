@@ -23,31 +23,9 @@ import type {
   SignedOutAuthObject,
 } from "@clerk/nextjs/dist/api";
 
-type CreateContextOptions = Record<string, never>;
-
-/**
- * This helper generates the "internals" for a tRPC context. If you need to use it, you can export
- * it from here.
- *
- * Examples of things you may need it for:
- * - testing, so we don't have to mock Next.js' req/res
- * - tRPC's `createSSGHelpers`, where we don't have req/res
- *
- * @see https://create.t3.gg/en/usage/trpc#-serverapitrpcts
- */
 interface AuthContext {
   auth: SignedInAuthObject | SignedOutAuthObject;
 }
-
-const createInnerTRPCContext = (
-  _opts: CreateContextOptions,
-  { auth }: AuthContext
-) => {
-  return {
-    prisma,
-    auth,
-  };
-};
 
 /**
  * This is the actual context you will use in your router. It will be used to process every request
@@ -55,8 +33,12 @@ const createInnerTRPCContext = (
  *
  * @see https://trpc.io/docs/context
  */
-export const createTRPCContext = (_opts: CreateNextContextOptions) => {
-  return createInnerTRPCContext({}, { auth: getAuth(_opts.req) });
+export const createTRPCContext = async (opts: CreateNextContextOptions) => {
+  const { req } = opts;
+  return {
+    prisma,
+    auth: getAuth(opts.req),
+  };
 };
 
 /**
@@ -66,7 +48,7 @@ export const createTRPCContext = (_opts: CreateNextContextOptions) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
-import { initTRPC } from "@trpc/server";
+import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
@@ -90,6 +72,17 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
  * These are the pieces you use to build your tRPC API. You should import these a lot in the
  * "/src/server/api/routers" directory.
  */
+// check if the user is signed in, otherwise through a UNAUTHORIZED CODE
+const isAuthed = t.middleware(({ next, ctx }) => {
+  if (!ctx.auth) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      auth: ctx.auth,
+    },
+  });
+});
 
 /**
  * This is how you create new routers and sub-routers in your tRPC API.
@@ -106,3 +99,4 @@ export const createTRPCRouter = t.router;
  * are logged in.
  */
 export const publicProcedure = t.procedure;
+export const protectedProcedure = t.procedure.use(isAuthed);

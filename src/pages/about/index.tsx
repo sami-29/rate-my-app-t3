@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function About() {
   const user = useUser();
   return (
-    <div className="space-y-52 p-12">
+    <div className="space-y-32 p-12">
       <div>
         <h1 className="mb-16 text-center text-4xl font-bold ">
           About Rate My App
@@ -57,12 +57,12 @@ export default function About() {
         <h2 className="mb-16 text-center text-3xl font-bold ">
           Dive In Today!
         </h2>
-        <p className="mx-auto max-w-screen-sm">
+        <p className="mx-auto mb-8 max-w-screen-sm">
           The world of apps is constantly evolving, and we are at the forefront
           of this exciting journey. Are you ready to make your mark?
         </p>
 
-        <div className=" flex justify-center gap-2">
+        <div className="mb-8 flex justify-center gap-2">
           <Link className="btn-secondary btn" href={"/explore"}>
             Explore
           </Link>
