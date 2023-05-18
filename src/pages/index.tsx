@@ -3,11 +3,14 @@ import Head from "next/head";
 
 import { api } from "@/utils/api";
 
-import { useUser } from "@clerk/nextjs";
+import { SignedIn, useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 const Home: NextPage = () => {
   const { data, isLoading } = api.apps.getAll.useQuery();
+  const router = useRouter();
 
   const user = useUser();
 
@@ -27,7 +30,7 @@ const Home: NextPage = () => {
       </Head>
 
       {/* The button to open modal */}
-      {!!user.isSignedIn && (
+      <SignedIn>
         <Link
           className="btn-primary btn-circle btn fixed bottom-4 right-4"
           href={"/CreateApp"}
@@ -43,7 +46,7 @@ const Home: NextPage = () => {
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
           </svg>
         </Link>
-      )}
+      </SignedIn>
     </>
   );
 };

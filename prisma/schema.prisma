@@ -45,6 +45,7 @@ model App {
   updated_at    DateTime   @updatedAt
   title         String     @db.VarChar(63)
   description   String     @db.VarChar(1023)
+
   url           String?
   sourceCodeUrl String?
   type          AppType

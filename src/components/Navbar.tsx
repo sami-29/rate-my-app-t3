@@ -1,9 +1,4 @@
-import {
-  SignInButton,
-  SignOutButton,
-  UserButton,
-  useUser,
-} from "@clerk/nextjs";
+import { SignInButton, SignedIn, UserButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 
 export default function Navbar() {
@@ -82,7 +77,7 @@ export default function Navbar() {
             </SignInButton>
           </div>
         )}
-        {!!user.isSignedIn && (
+        <SignedIn>
           <>
             <button className="dropdown dropdown-end btn-ghost btn-circle btn mx-2  ">
               <label tabIndex={0} className="cursor-pointer">
@@ -118,7 +113,7 @@ export default function Navbar() {
             </button>
             <UserButton></UserButton>
           </>
-        )}
+        </SignedIn>
       </div>
     </div>
   );

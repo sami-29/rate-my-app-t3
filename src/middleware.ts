@@ -1,21 +1,19 @@
-import { withClerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { authMiddleware } from "@clerk/nextjs";
 
-export default withClerkMiddleware((req: NextRequest) => {
-  return NextResponse.next();
+export default authMiddleware({
+  // Set the paths that don't require the user to be signed in
+  // Sign in and sign up pages are already made public by Clerk
+  publicRoutes: [
+    "/",
+    "/explore",
+    "/about",
+    "/terms",
+    "/cookies",
+    "/privacy",
+    "/faq",
+  ],
 });
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next
-     * - static (static files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    "/((?!static|.*\\..*|_next|favicon.ico).*)",
-    "/",
-  ],
+  matcher: ["/(.*?trpc.*?|(?!static|.*\\..*|_next|favicon.ico).*)", "/"],
 };
