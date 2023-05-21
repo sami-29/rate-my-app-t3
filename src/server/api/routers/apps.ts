@@ -17,8 +17,8 @@ const AppField = z.object({
 });
 
 export const appsRouter = createTRPCRouter({
-  getAll: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.app.findMany({
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    return await ctx.prisma.app.findMany({
       take: 100,
       orderBy: [{ created_at: "desc" }],
     });
@@ -38,6 +38,15 @@ export const appsRouter = createTRPCRouter({
           url: input.url,
           sourceCodeUrl: input.sourceCodeUrl,
         },
+      });
+
+      input.images.forEach(async (imageUrl) => {
+        await ctx.prisma.appImage.create({
+          data: {
+            url: imageUrl,
+            appId: app.id,
+          },
+        });
       });
 
       return app;
