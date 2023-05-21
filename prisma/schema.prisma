@@ -45,7 +45,7 @@ model App {
   updated_at    DateTime   @updatedAt
   title         String     @db.VarChar(63)
   description   String     @db.VarChar(1023)
-
+  AppImage      AppImage[]
   url           String?
   sourceCodeUrl String?
   type          AppType
@@ -56,6 +56,15 @@ model App {
   Donation      Donation[]
 
   @@index([ownerId])
+}
+
+model AppImage {
+  id        String  @id @default(cuid())
+  url       String
+  appId     String
+  App       App     @relation(fields: [appId], references: [id])
+  
+  @@index([appId])
 }
 
 model Rating {

@@ -6,14 +6,17 @@ import {
   publicProcedure,
 } from "@/server/api/trpc";
 
-/**
- * Router for managing applications.
- */
+const AppField = z.object({
+  ownerId: z.string().min(1, { message: "required" }),
+  title: z.string().min(1).max(63),
+  description: z.string().min(1).max(1023),
+  images: z.array(z.string().url()).min(1).max(5),
+  type: z.enum(["WEB", "MOBILE", "DESKTOP"]),
+  url: z.union([z.string().url().nullish(), z.literal("")]),
+  sourceCodeUrl: z.union([z.string().url().nullish(), z.literal("")]),
+});
+
 export const appsRouter = createTRPCRouter({
-  /**
-   * Retrieves a list of all applications.
-   * @returns {Promise<Array<Object>>} A promise that resolves to an array of application objects.
-   */
   getAll: publicProcedure.query(({ ctx }) => {
     return ctx.prisma.app.findMany({
       take: 100,
@@ -21,26 +24,8 @@ export const appsRouter = createTRPCRouter({
     });
   }),
 
-  /**
-   * Creates a new application.
-   * @param {Object} input - The input object containing application details.
-   * @param {string} input.title - The title of the application.
-   * @param {string} input.description - The description of the application.
-   * @param {string} input.type - The type of the application (one of "WEB", "MOBILE", or "DESKTOP").
-   * @param {string|null} input.url - The URL of the application (can be null or an empty string).
-   * @param {string|null} input.sourceCodeUrl - The URL of the application's source code (can be null or an empty string).
-   * @returns {Promise<Object>} A promise that resolves to the created application object.
-   */
   create: protectedProcedure
-    .input(
-      z.object({
-        title: z.string().min(1).max(80),
-        description: z.string().min(1).max(2000),
-        type: z.enum(["WEB", "MOBILE", "DESKTOP"]),
-        url: z.union([z.string().url().nullish(), z.literal("")]),
-        sourceCodeUrl: z.union([z.string().url().nullish(), z.literal("")]),
-      })
-    )
+    .input(AppField)
     .mutation(async ({ ctx, input }) => {
       const authorId = ctx.auth.userId;
 
@@ -54,6 +39,23 @@ export const appsRouter = createTRPCRouter({
           sourceCodeUrl: input.sourceCodeUrl,
         },
       });
+
+      return app;
+    }),
+
+  delete: protectedProcedure
+    .input(
+      z.object({
+        appId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const app = await ctx.prisma.app.delete({
+        where: {
+          id: input.appId,
+        },
+      });
+
       return app;
     }),
 });

@@ -17,16 +17,7 @@
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 
 import { prisma } from "@/server/db";
-import { getAuth, clerkClient } from "@clerk/nextjs/server";
-import type {
-  SignedInAuthObject,
-  SignedOutAuthObject,
-} from "@clerk/nextjs/dist/api";
-
-interface AuthContext {
-  auth: SignedInAuthObject | SignedOutAuthObject;
-}
-
+import { getAuth } from "@clerk/nextjs/server";
 /**
  * This is the actual context you will use in your router. It will be used to process every request
  * that goes through your tRPC endpoint.
@@ -37,7 +28,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   const { req } = opts;
   return {
     prisma,
-    auth: getAuth(opts.req),
+    auth: getAuth(req),
   };
 };
 
