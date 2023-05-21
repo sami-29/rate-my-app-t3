@@ -3,16 +3,11 @@ import Head from "next/head";
 
 import { api } from "@/utils/api";
 
-import { SignedIn, useUser } from "@clerk/nextjs";
+import { SignedIn } from "@clerk/nextjs";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
 
 const Home: NextPage = () => {
   const { data, isLoading } = api.apps.getAll.useQuery();
-  const router = useRouter();
-
-  const user = useUser();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -29,6 +24,11 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
+      <div>
+        {data.map((app) => {
+          return <div key={app.id}>{<h2>{app.title}</h2>}</div>;
+        })}
+      </div>
       {/* The button to open modal */}
       <SignedIn>
         <Link

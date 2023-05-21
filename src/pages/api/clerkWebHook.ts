@@ -1,11 +1,10 @@
 import { appRouter } from "@/server/api/root";
-import { api } from "@/utils/api";
 import type { WebhookEvent } from "@clerk/clerk-sdk-node";
 import { TRPCError } from "@trpc/server";
 import { getHTTPStatusCodeFromError } from "@trpc/server/http";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-export const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+const clerkSyncHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   const evt = req.body.evt as WebhookEvent;
   const caller = appRouter.createCaller({} as any);
 
@@ -20,6 +19,7 @@ export const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           name: username!,
           profilePic: profile_image_url,
         });
+        console.log(result);
 
         res.status(200).json({ data: { success: result ? true : false } });
       } catch (err) {
@@ -39,3 +39,5 @@ export const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       }
   }
 };
+
+export default clerkSyncHandler;
