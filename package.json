@@ -14,7 +14,7 @@
     "@hookform/resolvers": "^3.1.0",
     "@prisma/client": "^4.14.1",
     "@t3-oss/env-nextjs": "^0.2.1",
-    "@tanstack/react-query": "^4.28.0",
+    "@tanstack/react-query": "^4.29.7",
     "@trpc/client": "^10.18.0",
     "@trpc/next": "^10.26.0",
     "@trpc/react-query": "^10.18.0",
