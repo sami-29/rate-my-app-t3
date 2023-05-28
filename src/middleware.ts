@@ -11,6 +11,7 @@ export default authMiddleware({
     "/cookies",
     "/privacy",
     "/faq",
+    "/api/:path*",
   ],
 });
 

@@ -7,7 +7,6 @@ import {
 } from "@/server/api/trpc";
 
 const AppField = z.object({
-  ownerId: z.string().min(1, { message: "required" }),
   title: z.string().min(1).max(63),
   description: z.string().min(1).max(1023),
   images: z.array(z.string().url()).min(1).max(5),
@@ -24,22 +23,25 @@ export const appsRouter = createTRPCRouter({
     });
   }),
 
-  create: protectedProcedure
-    .input(AppField)
+  create: publicProcedure
+    .input(
+      AppField.extend({
+        id: z.string(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
-      const authorId = ctx.auth.userId;
-
+      console.log("RUNNING");
       const app = await ctx.prisma.app.create({
         data: {
-          ownerId: authorId!,
-          title: input.title,
           description: input.description,
+          title: input.title,
           type: input.type,
+          ownerId: input.id,
           url: input.url,
           sourceCodeUrl: input.sourceCodeUrl,
         },
       });
-
+      console.log(app);
       input.images.forEach(async (imageUrl) => {
         await ctx.prisma.appImage.create({
           data: {
@@ -47,6 +49,21 @@ export const appsRouter = createTRPCRouter({
             appId: app.id,
           },
         });
+      });
+
+      return app;
+    }),
+
+  modify: protectedProcedure
+    .input(
+      AppField.partial().extend({
+        appId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const app = await ctx.prisma.app.update({
+        where: { id: input.appId },
+        data: input,
       });
 
       return app;

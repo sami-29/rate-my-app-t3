@@ -1,8 +1,24 @@
 import { SignInButton, SignedIn, UserButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 
+const fetchNotifications = async () => {
+  return;
+};
+
 export default function Navbar() {
   const user = useUser();
+
+  // const mutation = api.users.createUser.useMutation();
+
+  // if (!!user.isSignedIn) {
+  //   mutation.mutate({
+  //     id: user.user.id,
+  //     email: user.user.primaryEmailAddress?.emailAddress!,
+  //     name: user.user.username!,
+  //     profilePic: user.user.profileImageUrl,
+  //   });
+  // }
+
   return (
     <div className="shadow-base-00 navbar bg-base-100 shadow-md">
       <div className="navbar-start">

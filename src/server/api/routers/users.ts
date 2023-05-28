@@ -16,35 +16,45 @@ export const usersRouter = createTRPCRouter({
   getUser: publicProcedure
     .input(
       z.object({
-        userId: z.string(),
+        id: z.string(),
       })
     )
     .query(async ({ ctx, input }) => {
-      return await ctx.prisma.user.findUnique({ where: { id: input.userId } });
+      console.log(input.id);
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: input.id },
+      });
+
+      return user;
     }),
   createUser: publicProcedure
     .input(
       z.object({
-        clerkId: z.string(),
+        id: z.string(),
         name: z.string(),
         email: z.string().email(),
-        profilePic: z.union([z.string().url().nullish(), z.literal("")]),
+        profilePic: z.string().url(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.prisma.user.create({
-        data: input,
+      console.log(input);
+      return ctx.prisma.user.create({
+        data: {
+          email: input.email,
+          id: input.id,
+          name: input.name,
+          profilePic: input.profilePic,
+        },
       });
-      return true;
     }),
   deleteUser: protectedProcedure
     .input(
       z.object({
-        userId: z.string(),
+        id: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.prisma.user.delete({ where: { id: input.userId } });
+      await ctx.prisma.user.delete({ where: { id: input.id } });
 
       return {
         message: "Deleted user successfully",

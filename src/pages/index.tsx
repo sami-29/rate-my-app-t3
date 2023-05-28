@@ -1,19 +1,27 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-
-import { api } from "@/utils/api";
-
 import { SignedIn } from "@clerk/nextjs";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { App, AppImage, User } from "@prisma/client";
+import Image from "next/image";
+
+const fetchApps = async () => {
+  const res = await fetch("/api/apps/getAll");
+  const body = await res.json();
+
+  return body as (App & { AppImages: AppImage[]; User: User })[];
+};
 
 const Home: NextPage = () => {
-  const { data, isLoading } = api.apps.getAll.useQuery();
-
+  const { data, isLoading, failureReason } = useQuery(["getApps"], fetchApps);
+  console.log(data);
   if (isLoading) {
     return <div>Loading...</div>;
   }
+
   if (!data) {
-    return <div>Something went wrong</div>;
+    return <div>No data found</div>;
   }
 
   return (
@@ -24,9 +32,35 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div>
+      <div className="grid gap-6 sm:grid-cols-2  lg:grid-cols-3 2xl:grid-cols-4">
         {data.map((app) => {
-          return <div key={app.id}>{<h2>{app.title}</h2>}</div>;
+          return (
+            <div key={app.id} className="rounded-xl">
+              <div className="relative  h-64 ">
+                <Image
+                  src={app.AppImages[0]?.url!}
+                  alt={""}
+                  fill
+                  className="rounded-xl object-cover"
+                ></Image>
+              </div>
+              <div className="flex gap-4">
+                <div className="relative">
+                  <Image
+                    src={app.User.profilePic}
+                    alt=""
+                    height={32}
+                    width={32}
+                    className="rounded-full"
+                  ></Image>
+                </div>
+                <div>
+                  <div className=" py-1  text-2xl">{app.title}</div>
+                  <div>{app.description}</div>
+                </div>
+              </div>
+            </div>
+          );
         })}
       </div>
       {/* The button to open modal */}

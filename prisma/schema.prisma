@@ -9,17 +9,17 @@ datasource db {
 }
 
 model User {
-  id           String         @id @default(cuid())
-  clerkId      String
+  id           String         @unique
   name         String
   email        String         @unique 
   created_at   DateTime       @default(now())
   updated_at   DateTime       @updatedAt
-  App          App[]
-  Rating       Rating[]
-  Comment      Comment[]
-  Donation     Donation[]
-  Notification Notification[]
+  profilePic String
+  Apps          App[]
+  Ratings       Rating[]
+  Comments      Comment[]
+  Donations     Donation[]
+  Notifications Notification[]
 }
 
 model Notification {
@@ -46,21 +46,23 @@ model App {
   updated_at    DateTime   @updatedAt
   title         String     @db.VarChar(63)
   description   String     @db.VarChar(1023)
-  AppImage      AppImage[]
+  AppImages      AppImage[]
   url           String?
   sourceCodeUrl String?
   type          AppType
   ownerId       String
-  User          User       @relation(fields: [ownerId], references: [id])
-  Rating        Rating[]
-  Comment       Comment[]
-  Donation      Donation[]
+  User         User       @relation(fields: [ownerId], references: [id])
+  Ratings        Rating[]
+  Comments       Comment[]
+  Donations      Donation[]
 
   @@index([ownerId])
 }
 
 model AppImage {
   id        String  @id @default(cuid())
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
   url       String
   appId     String
   App       App     @relation(fields: [appId], references: [id])
@@ -68,13 +70,18 @@ model AppImage {
   @@index([appId])
 }
 
+enum RatingType{
+  UI
+  CODE
+  IDEA
+}
+
 model Rating {
   id         String   @id @default(cuid())
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  UIrating   Int
-  coderating Int
-  ideaRating Int
+  type       RatingType
+  score      Int
   appId      String
   userId     String
   App        App      @relation(fields: [appId], references: [id])

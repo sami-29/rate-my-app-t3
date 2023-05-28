@@ -8,7 +8,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Navbar />
       <main className="relative mb-auto min-h-screen">
         <ThemeSwap></ThemeSwap>
-        <div className="">{children}</div>
+        <div className="pt-16 md:px-6">{children}</div>
       </main>
       <Footer />
     </>

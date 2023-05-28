@@ -1,4 +1,3 @@
-import { api } from "@/utils/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UploadDropzone } from "@uploadthing/react";
@@ -8,7 +7,9 @@ import type { OurFileRouter } from "@/server/uploadthing/router";
 // You need to import our styles for the button to look right. Best to import in the root /_app.tsx but this is fine
 import "@uploadthing/react/styles.css";
 import { z } from "zod";
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/router";
 
 const AppField = z.object({
   title: z.string().min(1).max(63),
@@ -18,10 +19,30 @@ const AppField = z.object({
   sourceCodeUrl: z.union([z.string().url().nullish(), z.literal("")]),
 });
 
+const postApp = async (data: any) => {
+  const response = await fetch("/api/apps/create", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    redirect: "follow",
+    body: JSON.stringify(data),
+  });
+
+  return response.json();
+};
+
 export default function CreateApp() {
   const user = useUser();
   const [images, setImages] = useState([]);
-  const { mutate } = api.apps.create.useMutation();
+  const mutation = useMutation({
+    mutationFn: postApp,
+    onSuccess: (res) => {
+      console.log(res);
+      router.push(`/app/${res.id}`);
+    },
+  });
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -29,17 +50,26 @@ export default function CreateApp() {
     formState: { errors },
   } = useForm({ resolver: zodResolver(AppField) });
 
+  if (mutation.isLoading) {
+    return <div>Posting app</div>;
+  }
+
+  if (mutation.error) {
+    return <div className="">An error has occured</div>;
+  }
+
   return (
     <div className="container mx-auto xl:max-w-screen-xl">
       <form
         onSubmit={handleSubmit((d) => {
-          d.ownerId = user.user?.id!;
-          d.images = images.map((image: any) => image.fileUrl);
+          console.log("RUNNING");
+          d.ownerId = user.user?.id! as string;
+          d.images = images.map((image: any) => image.fileUrl) as string[];
           console.log(d);
-
           // TO BE FIXED
           if (d.ownerId && d.images.length > 0) {
-            mutate(d as any);
+            const a = mutation.mutate(d);
+            console.log(a);
           }
         })}
         className="flex flex-col gap-12 md:flex-row"
