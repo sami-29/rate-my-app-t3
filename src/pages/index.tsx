@@ -5,6 +5,10 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { App, AppImage, User } from "@prisma/client";
 import Image from "next/image";
+import relativeTime from "dayjs/plugin/relativeTime";
+import dayjs from "dayjs";
+
+dayjs.extend(relativeTime);
 
 const fetchApps = async () => {
   const res = await fetch("/api/apps/getAll");
@@ -32,7 +36,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="grid gap-6 sm:grid-cols-2  lg:grid-cols-3 2xl:grid-cols-4">
+      <div className="grid grid-cols-4 gap-6  sm:grid-cols-2  xl:grid-cols-3">
         {data.map((app) => {
           return (
             <div key={app.id} className="rounded-xl">
@@ -44,20 +48,33 @@ const Home: NextPage = () => {
                   className="rounded-xl object-cover"
                 ></Image>
               </div>
-              <div className="flex gap-4">
-                <div className="relative">
-                  <Image
-                    src={app.User.profilePic}
-                    alt=""
-                    height={32}
-                    width={32}
-                    className="rounded-full"
-                  ></Image>
+              <div className="flex gap-4 pt-2">
+                <div className="relative flex-shrink-0 ">
+                  <Link href={`/user/${app.User.id}`}>
+                    <Image
+                      src={app.User.profilePic}
+                      alt=""
+                      height={32}
+                      width={32}
+                      className="rounded-full pt-1"
+                    ></Image>
+                  </Link>
                 </div>
-                <div>
-                  <div className=" py-1  text-2xl">{app.title}</div>
-                  <div>{app.description}</div>
+                <div className="flex flex-col overflow-hidden text-ellipsis">
+                  <div className="text-2xl">{app.title}</div>
+                  <div className="max-h-[3rem] overflow-hidden break-words">
+                    {app.description}
+                  </div>
+                  <div className="flex-shrink-0">
+                    {dayjs().to(app.created_at as unknown as string)}
+                  </div>
                 </div>
+                <Link
+                  href={`/app/${app.id}`}
+                  className="btn-secondary btn ml-auto "
+                >
+                  More details
+                </Link>
               </div>
             </div>
           );

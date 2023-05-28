@@ -59,6 +59,9 @@ export default function Navbar() {
             className="dropdown-content menu rounded-box menu-compact mt-3 w-52 bg-base-100 p-2 shadow"
           >
             <li>
+              <Link href={"/"}>Home</Link>
+            </li>
+            <li>
               <Link href={"/explore"}>Explore</Link>
             </li>
             <li>
@@ -73,7 +76,7 @@ export default function Navbar() {
       <div className="navbar-center">
         <Link
           href={"/"}
-          className="btn-ghost btn hidden text-xl normal-case lg:flex"
+          className="btn-ghost btn hidden text-2xl normal-case md:flex"
         >
           Rate My App
         </Link>
