@@ -199,7 +199,7 @@ export default function AppDetails({
                 <div>{comment.User.name}</div>
                 <div>. {dayjs().to(comment.created_at)}</div>
               </div>
-              <div className="">{comment.text}</div>
+              <div className="">{comment.content}</div>
             </div>
           );
         })}

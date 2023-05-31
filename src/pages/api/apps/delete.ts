@@ -2,13 +2,16 @@ import { prisma } from "@/server/db";
 import { NextApiRequest, NextApiResponse } from "next";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method === "GET") {
-    const notifications = await prisma.notification.findMany({
-      where: { userId: req.body.id },
+  if (req.method === "DELETE") {
+    const { id } = req.body;
+
+    const deletedApp = await prisma.app.delete({
+      where: {
+        id: id,
+      },
     });
 
-    console.log(notifications);
-    res.json(notifications);
+    res.json(deletedApp);
   }
 };
 

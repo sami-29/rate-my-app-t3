@@ -7,6 +7,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       where: {
         id: req.body.id,
       },
+      include: {
+        AppImages: true,
+      },
     });
 
     if (!app) {
@@ -14,18 +17,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return;
     }
 
-    const images = await prisma.appImage.findMany({
-      where: {
-        appId: app.id,
-      },
-    });
-
-    const appWithImages = {
-      ...app,
-      images: images,
-    };
-
-    res.json(appWithImages);
+    res.json(app);
   }
 };
 
