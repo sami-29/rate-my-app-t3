@@ -16,6 +16,13 @@ export default function About() {
           and people who simply love apps, all passionate about the potential of
           technology to reshape our world.
         </p>
+        <div className="flex translate-y-12 justify-center">
+          {!user.isSignedIn && (
+            <SignInButton mode="modal">
+              <button className="btn-primary btn">Sign In</button>
+            </SignInButton>
+          )}
+        </div>
       </div>
 
       <div>

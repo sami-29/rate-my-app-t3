@@ -1,23 +1,26 @@
 import { SignInButton, SignedIn, UserButton, useUser } from "@clerk/nextjs";
+import { Notification } from "@prisma/client";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-
-const fetchNotifications = async () => {
-  return;
-};
 
 export default function Navbar() {
   const user = useUser();
 
-  // const mutation = api.users.createUser.useMutation();
+  const { data, error, failureReason } = useQuery({
+    queryKey: ["Notifications"],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append("userId", user.user?.id!);
 
-  // if (!!user.isSignedIn) {
-  //   mutation.mutate({
-  //     id: user.user.id,
-  //     email: user.user.primaryEmailAddress?.emailAddress!,
-  //     name: user.user.username!,
-  //     profilePic: user.user.profileImageUrl,
-  //   });
-  // }
+      const res = await fetch(`/api/notifications?${params.toString()}`, {
+        method: "GET",
+      });
+      const body = await res.json();
+      console.log(body);
+
+      return body as Notification[];
+    },
+  });
 
   return (
     <div className="shadow-base-00 navbar bg-base-100 shadow-md">
@@ -100,7 +103,7 @@ export default function Navbar() {
           <>
             <button className="dropdown dropdown-end btn-ghost btn-circle btn mx-2  ">
               <label tabIndex={0} className="cursor-pointer">
-                <div className="indicator">
+                <div className={data ? "indicator" : ""}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -122,12 +125,18 @@ export default function Navbar() {
                 tabIndex={0}
                 className="dropdown-content menu rounded-box w-52 bg-base-100 p-2 shadow"
               >
-                <li>
-                  <a>Item 1</a>
-                </li>
-                <li>
-                  <a>Item 2</a>
-                </li>
+                {!data && (
+                  <li>
+                    <a>There are no notifications for you</a>
+                  </li>
+                )}
+                {data?.map((notif) => {
+                  return (
+                    <li>
+                      <a>{notif.content}</a>
+                    </li>
+                  );
+                })}
               </ul>
             </button>
             <UserButton></UserButton>

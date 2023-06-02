@@ -3,19 +3,17 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
-    if (req.method === "POST") {
-      const { content, userId } = await req.body;
-      const notification = await prisma.notification.create({
-        data: {
-          content: content,
-          userId: userId,
-        },
-      });
+    const { content, userId } = req.body;
+    const notification = await prisma.notification.create({
+      data: {
+        content: content,
+        userId: userId,
+      },
+    });
 
-      res.json({
-        id: notification.id,
-      });
-    }
+    res.json({
+      id: notification.id,
+    });
   } else if (req.method === "PUT") {
     const { id } = req.body;
 
@@ -55,11 +53,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         res.status(404).json({ error: "Notification not found" });
       }
     } else if (userId) {
+      console.log(userId);
       const notifications = await prisma.notification.findMany({
         where: {
-          id: String(userId),
+          userId: String(userId),
         },
       });
+      console.log(notifications);
       res.json(notifications);
     }
   }

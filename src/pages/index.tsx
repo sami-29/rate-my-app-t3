@@ -1,24 +1,34 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import { SignedIn } from "@clerk/nextjs";
+import { SignedIn, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { App, AppImage, User } from "@prisma/client";
 import Image from "next/image";
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
+import { withServerSideAuth } from "@clerk/nextjs/ssr";
 
 dayjs.extend(relativeTime);
 
-const fetchApps = async () => {
-  const res = await fetch("/api/apps/getAll");
-  const body = await res.json();
-
-  return body as (App & { AppImages: AppImage[]; User: User })[];
-};
-
 const Home: NextPage = () => {
-  const { data, isLoading, failureReason } = useQuery(["getApps"], fetchApps);
+  const user = useUser();
+  const { data, isLoading, failureReason } = useQuery(
+    ["getUserApps"],
+    async () => {
+      const params = new URLSearchParams();
+      params.append("userId", user.user?.id!);
+
+      const res = await fetch(`/api/apps/getAll?${params.toString()}`, {
+        method: "GET",
+      });
+      const body = await res.json();
+      console.log(body);
+
+      return body as (App & { AppImages: AppImage[]; User: User })[];
+    }
+  );
+
   console.log(data);
   if (isLoading) {
     return <div>Loading...</div>;
@@ -101,5 +111,22 @@ const Home: NextPage = () => {
     </>
   );
 };
+
+export const getServerSideProps = withServerSideAuth(async ({ req }) => {
+  const { userId } = req.auth;
+
+  if (!userId) {
+    return {
+      redirect: {
+        destination: "/about",
+        permanent: false,
+      },
+    };
+  }
+
+  // Load any data your application needs and pass to props
+
+  return { props: {} };
+});
 
 export default Home;

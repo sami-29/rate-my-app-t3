@@ -24,6 +24,10 @@ const config = {
         protocol: "https",
         hostname: "images.clerk.dev",
       },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+      },
     ],
   },
 

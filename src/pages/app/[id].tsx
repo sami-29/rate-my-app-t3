@@ -30,6 +30,8 @@ export async function getServerSideProps(context: any) {
     },
   });
 
+  console.log(id);
+
   return {
     props: {
       app: JSON.parse(JSON.stringify(res)) as

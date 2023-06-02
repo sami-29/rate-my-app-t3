@@ -28,10 +28,10 @@ model Notification {
   updated_at DateTime @updatedAt
   content    String
   isRead     Boolean  @default(false)
-  userId     String
-  User       User     @relation(fields: [userId], references: [id])
+  appId     String
+  User       User     @relation(fields: [appId], references: [id])
 
-  @@index([userId])
+  @@index([appId])
 }
 
 enum AppType {
