@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
-import { useUser } from "@clerk/nextjs";
+import { SignIn, SignInButton, useUser } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -330,52 +330,63 @@ export default function AppDetails({
                 </a>
               </div>
             </div>
-            {!(user.user?.id === app.User.id) && (
-              <div>
-                {" "}
-                <div className="mx-auto mt-12 max-w-xs">
-                  <label htmlFor="my-modal" className="btn-accent btn">
-                    Leave a rating and comment
-                  </label>
-                  <input
-                    type="checkbox"
-                    id="my-modal"
-                    className="modal-toggle"
-                  />
-                  <label htmlFor="my-modal" className="modal cursor-pointer">
-                    <label className="modal-box relative" htmlFor="">
-                      <form
-                        className="flex flex-col gap-4"
-                        onSubmit={handleSubmit(onSubmit)}
-                      >
-                        <RatingComponent
-                          register={register}
-                          type="UI"
-                        ></RatingComponent>
-                        <RatingComponent
-                          register={register}
-                          type="CODE"
-                        ></RatingComponent>
-                        <RatingComponent
-                          register={register}
-                          type="IDEA"
-                        ></RatingComponent>
-                        <input
-                          type="text"
-                          defaultValue={"Great Application!"}
-                          {...register("Comment")}
-                          className="input-bordered input w-full max-w-xs"
-                        />
-                        <div className="modal-action">
-                          <label htmlFor="my-modal" className="btn-primary btn">
-                            <input type="submit" />
-                          </label>
-                        </div>
-                      </form>
+            {user.isSignedIn ? (
+              !(user.user?.id === app.User.id) && (
+                <div>
+                  {" "}
+                  <div className="mx-auto mt-12 max-w-xs">
+                    <label htmlFor="my-modal" className="btn-accent btn">
+                      Leave a rating and comment
                     </label>
-                  </label>
+                    <input
+                      type="checkbox"
+                      id="my-modal"
+                      className="modal-toggle"
+                    />
+                    <label htmlFor="my-modal" className="modal cursor-pointer">
+                      <label className="modal-box relative" htmlFor="">
+                        <form
+                          className="flex flex-col gap-4"
+                          onSubmit={handleSubmit(onSubmit)}
+                        >
+                          <RatingComponent
+                            register={register}
+                            type="UI"
+                          ></RatingComponent>
+                          <RatingComponent
+                            register={register}
+                            type="CODE"
+                          ></RatingComponent>
+                          <RatingComponent
+                            register={register}
+                            type="IDEA"
+                          ></RatingComponent>
+                          <input
+                            type="text"
+                            defaultValue={"Great Application!"}
+                            {...register("Comment")}
+                            className="input-bordered input w-full max-w-xs"
+                          />
+                          <div className="modal-action">
+                            <label
+                              htmlFor="my-modal"
+                              className="btn-primary btn"
+                            >
+                              <input type="submit" />
+                            </label>
+                          </div>
+                        </form>
+                      </label>
+                    </label>
+                  </div>
                 </div>
-              </div>
+              )
+            ) : (
+              <SignInButton mode="modal">
+                <button className="btn-primary btn">
+                  Leave a rating and comment
+                </button>
+              </SignInButton>
             )}
           </div>
         </div>

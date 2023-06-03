@@ -12,6 +12,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       },
       include: {
         AppImages: true,
+        Comments: true,
+        Ratings: true,
+        Donations: true,
       },
     });
 
