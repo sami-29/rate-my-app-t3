@@ -1,41 +1,63 @@
-import { useMutation } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { UseFormRegister } from "react-hook-form";
 
-const RatingComponent = ({ type }: { type: string }) => {
-  const mutation = useMutation;
+const RatingComponent = ({
+  type,
+  register,
+}: {
+  type: string;
+  register: UseFormRegister<any>;
+}) => {
+  const [rating, setRating] = useState(5);
+
+  const handleRatingChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newRating = parseInt(event.target.value);
+    setRating(newRating);
+  };
+
   return (
     <div className="flex gap-2">
       <span className="w-12">{type} </span>
       <div className="rating">
         <input
           type="radio"
-          name="rating-1"
-          className="mask mask-star "
-          value={1}
+          className="mask mask-star"
+          defaultValue={1}
+          {...register(`${type}-rating`)}
+          checked={rating === 1}
+          onChange={handleRatingChange}
         />
         <input
           type="radio"
-          name="rating-1"
           className="mask mask-star"
-          defaultChecked
-          value={2}
+          defaultValue={2}
+          {...register(`${type}-rating`)}
+          checked={rating === 2}
+          onChange={handleRatingChange}
         />
         <input
           type="radio"
-          name="rating-1"
           className="mask mask-star"
-          value={3}
+          defaultValue={3}
+          {...register(`${type}-rating`)}
+          checked={rating === 3}
+          onChange={handleRatingChange}
         />
         <input
           type="radio"
-          name="rating-1"
           className="mask mask-star"
-          value={4}
+          defaultValue={4}
+          {...register(`${type}-rating`)}
+          checked={rating === 4}
+          onChange={handleRatingChange}
         />
         <input
           type="radio"
-          name="rating-1"
           className="mask mask-star"
-          value={5}
+          defaultValue={5}
+          {...register(`${type}-rating`)}
+          checked={rating === 5}
+          onChange={handleRatingChange}
         />
       </div>
     </div>

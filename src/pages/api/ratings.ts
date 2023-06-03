@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
     const { score, type, appId, userId } = req.body;
-
+    console.log(req.body);
     const rating = await prisma.rating.create({
       data: {
         score: score,

@@ -89,6 +89,7 @@ model Rating {
 
   @@index([appId])
   @@index([userId])
+  @@unique([type, appId, userId]) 
 }
 
 model Comment {

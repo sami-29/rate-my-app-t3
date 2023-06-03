@@ -6,6 +6,10 @@ import Image from "next/image";
 import Link from "next/link";
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
+import { useUser } from "@clerk/nextjs";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/router";
+import { useForm, SubmitHandler } from "react-hook-form";
 
 dayjs.extend(relativeTime);
 
@@ -19,6 +23,11 @@ export async function getServerSideProps(context: any) {
         include: {
           User: true,
         },
+        orderBy: [
+          {
+            created_at: "desc",
+          },
+        ],
       },
       Donations: {
         include: {
@@ -29,8 +38,6 @@ export async function getServerSideProps(context: any) {
       User: true,
     },
   });
-
-  console.log(id);
 
   return {
     props: {
@@ -50,6 +57,99 @@ export async function getServerSideProps(context: any) {
       id: id,
     },
   };
+}
+async function submitRatingAndComment(
+  data: Record<string, string>,
+  userId: string,
+  appId: string
+) {
+  const {
+    Comment,
+    "UI-rating": uiRating,
+    "CODE-rating": codeRating,
+    "IDEA-rating": ideaRating,
+  } = data;
+
+  const ratingPromises = [
+    fetch("/api/ratings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "UI",
+        score: parseInt(uiRating!),
+        appId: appId,
+        userId: userId,
+      }),
+    }),
+    fetch("/api/ratings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "CODE",
+        score: parseInt(codeRating!),
+        appId: appId,
+        userId: userId,
+      }),
+    }),
+    fetch("/api/ratings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "IDEA",
+        score: parseInt(ideaRating!),
+        appId: appId,
+        userId: userId,
+      }),
+    }),
+  ];
+
+  let commentPromise: Promise<Response> | null = null;
+  if (Comment) {
+    commentPromise = fetch("/api/comments", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: Comment,
+        userId: userId,
+        appId: appId,
+      }),
+    });
+  }
+
+  try {
+    const ratingResponses = await Promise.all(ratingPromises);
+    let commentResponse: Response | null = null;
+    if (commentPromise) {
+      commentResponse = await commentPromise;
+    }
+
+    // Check the responses for any error status codes and handle accordingly
+    const responses: (Response | null)[] = [...ratingResponses];
+    if (commentResponse) {
+      responses.push(commentResponse);
+    }
+
+    const errorResponses = responses.filter(
+      (response) => response && !response.ok
+    );
+    if (errorResponses.length > 0) {
+      throw new Error("Error submitting rating and comment");
+    }
+
+    // All requests were successful
+    console.log("Rating and comment submitted successfully");
+  } catch (error) {
+    console.error(error);
+    // Handle error
+  }
 }
 
 function getAverageRatingByType(ratings: Rating[], type: string) {
@@ -81,44 +181,125 @@ export default function AppDetails({
     | null;
   id: string;
 }) {
+  const mutation = useMutation({
+    mutationFn: async (data: any) => {
+      submitRatingAndComment(data, user.user?.id!, app?.id!);
+    },
+    onSuccess: () => {
+      router.push(`/app/${id}`);
+    },
+  });
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<any>();
+  const onSubmit: SubmitHandler<any> = (data) => {
+    console.log(data);
+
+    mutation.mutate(data);
+  };
+
+  const user = useUser();
   if (!app) {
     return <div>There is no app with this ID</div>;
   }
+  const router = useRouter();
+  const deleteAppMutation = useMutation({
+    mutationKey: ["DeleteApp"],
+    mutationFn: async (id: string) => {
+      const res = await fetch("/api/apps/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: JSON.stringify({
+          id: id,
+        }),
+      });
+
+      const body = await res.json();
+      console.log(body);
+      return body;
+    },
+    onSuccess: (res) => {
+      console.log(res);
+      router.push(`/`);
+    },
+  });
+
+  const queryClient = useQueryClient();
 
   return (
     <div className="">
+      {!!(user.user?.id === app.User.id) && (
+        <div
+          className=" btn-error  btn absolute right-4  "
+          onClick={() => {
+            deleteAppMutation.mutate(app.id);
+          }}
+        >
+          Delete
+        </div>
+      )}
       <div className="text-center text-5xl text-primary">{app.title}</div>
       <div className="mt-16  flex gap-20 ">
         <div className="carousel-vertical carousel rounded-box relative  h-96 w-96 flex-shrink-0">
           {app.AppImages.map((image) => {
             return (
               <div key={image.id} className="carousel-item  h-full">
-                <Image src={image.url} fill alt="" />
+                <Image src={image.url} fill className="object-cover" alt="" />
               </div>
             );
           })}
         </div>
         <div className="flex flex-col gap-6">
-          <div>{app.description}</div>
+          <div className="flex gap-4">
+            <div className="self-center">Created By </div>
+            <div className="flex gap-2">
+              <Image
+                src={app.User.profilePic}
+                width={48}
+                height={48}
+                alt="Profile pic of the Owner"
+                className="rounded-full"
+              ></Image>
+              <div className="self-center">{app.User.name}</div>
+            </div>
+            <div className="ml-auto self-center">
+              posted {dayjs().to(app.created_at)}
+            </div>
+          </div>
+          <div className="min-h-[8rem]  border border-info-content p-4">
+            {app.description}
+          </div>
           <div className="flex gap-28">
             <div className="flex flex-col gap-6">
-              <div>Type : {app.type}</div>
-              <div>
-                <div>
-                  UI Rating: {getAverageRatingByType(app.Ratings, "UI")} ⭐️
+              <div className="">
+                Platform(s){" "}
+                <span className="btn-info btn-sm btn ">{app.type}</span>
+              </div>
+              <div className="flex flex-col gap-3 ">
+                <div className="flex gap-2">
+                  <span className="w-24">UI Rating</span>{" "}
+                  {getAverageRatingByType(app.Ratings, "UI")} ⭐️
                 </div>
-                <div>
-                  CODE Rating: {getAverageRatingByType(app.Ratings, "CODE")} ⭐️
+                <div className="flex gap-2">
+                  <span className="w-24">CODE Rating</span>
+                  {getAverageRatingByType(app.Ratings, "CODE")} ⭐️
                 </div>
-                <div>
-                  IDEA Rating: {getAverageRatingByType(app.Ratings, "IDEA")} ⭐️
+                <div className="flex gap-2">
+                  <span className="w-24">IDEA Rating</span>{" "}
+                  {getAverageRatingByType(app.Ratings, "IDEA")} ⭐️
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-4">
                 <a
                   href={app.url ? ensureAbsoluteURL(app.url) : ""}
                   className={`btn w-24 ${
-                    app.url ? "btn-primary" : "btn-disabled"
+                    app.url ? "btn-primary link" : "btn-disabled"
                   }`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -132,7 +313,7 @@ export default function AppDetails({
                       : ""
                   }
                   className={`btn ${
-                    app.sourceCodeUrl ? "btn-primary" : "btn-disabled"
+                    app.sourceCodeUrl ? "btn-primary link" : "btn-disabled"
                   }`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -149,39 +330,58 @@ export default function AppDetails({
                 </a>
               </div>
             </div>
-            <div>
-              {" "}
-              <div className="mx-auto mt-12 max-w-xs">
-                <label htmlFor="my-modal" className="btn-accent btn">
-                  Leave a rating and comment
-                </label>
-                <input type="checkbox" id="my-modal" className="modal-toggle" />
-                <label htmlFor="my-modal" className="modal cursor-pointer">
-                  <label className="modal-box relative" htmlFor="">
-                    <form className="flex flex-col gap-4">
-                      <RatingComponent type="UI"></RatingComponent>
-                      <RatingComponent type="CODE"></RatingComponent>
-                      <RatingComponent type="IDEA"></RatingComponent>
-                      <input
-                        type="text"
-                        placeholder="Enter your comment..."
-                        className="input-bordered input w-full max-w-xs"
-                      />
-                      <div className="modal-action">
-                        <label htmlFor="my-modal" className="btn-primary btn">
-                          Submit!
-                        </label>
-                      </div>
-                    </form>
+            {!(user.user?.id === app.User.id) && (
+              <div>
+                {" "}
+                <div className="mx-auto mt-12 max-w-xs">
+                  <label htmlFor="my-modal" className="btn-accent btn">
+                    Leave a rating and comment
                   </label>
-                </label>
+                  <input
+                    type="checkbox"
+                    id="my-modal"
+                    className="modal-toggle"
+                  />
+                  <label htmlFor="my-modal" className="modal cursor-pointer">
+                    <label className="modal-box relative" htmlFor="">
+                      <form
+                        className="flex flex-col gap-4"
+                        onSubmit={handleSubmit(onSubmit)}
+                      >
+                        <RatingComponent
+                          register={register}
+                          type="UI"
+                        ></RatingComponent>
+                        <RatingComponent
+                          register={register}
+                          type="CODE"
+                        ></RatingComponent>
+                        <RatingComponent
+                          register={register}
+                          type="IDEA"
+                        ></RatingComponent>
+                        <input
+                          type="text"
+                          defaultValue={"Great Application!"}
+                          {...register("Comment")}
+                          className="input-bordered input w-full max-w-xs"
+                        />
+                        <div className="modal-action">
+                          <label htmlFor="my-modal" className="btn-primary btn">
+                            <input type="submit" />
+                          </label>
+                        </div>
+                      </form>
+                    </label>
+                  </label>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="mx-auto mt-10 max-w-screen-xl gap-6  pt-4">
+      <div className="mx-auto mt-10 flex max-w-screen-xl  flex-col gap-6 pt-4">
         {app.Comments.map((comment) => {
           return (
             <div

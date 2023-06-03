@@ -16,7 +16,6 @@ export default function Navbar() {
         method: "GET",
       });
       const body = await res.json();
-      console.log(body);
 
       return body as Notification[];
     },
@@ -103,7 +102,7 @@ export default function Navbar() {
           <>
             <button className="dropdown dropdown-end btn-ghost btn-circle btn mx-2  ">
               <label tabIndex={0} className="cursor-pointer">
-                <div className={data ? "indicator" : ""}>
+                <div className={"indicator"}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -125,11 +124,12 @@ export default function Navbar() {
                 tabIndex={0}
                 className="dropdown-content menu rounded-box w-52 bg-base-100 p-2 shadow"
               >
-                {!data && (
-                  <li>
-                    <a>There are no notifications for you</a>
-                  </li>
-                )}
+                {!data ||
+                  (data.length === 0 && (
+                    <li>
+                      <a>There are no notifications for you</a>
+                    </li>
+                  ))}
                 {data?.map((notif) => {
                   return (
                     <li>
