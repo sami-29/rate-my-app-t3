@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
-import { SignIn, SignInButton, useUser } from "@clerk/nextjs";
+import { SignInButton, useUser } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -230,6 +230,25 @@ export default function AppDetails({
     },
   });
 
+  const deleteCommentMutation = useMutation({
+    mutationKey: ["DeleteComment"],
+    mutationFn: async (id: string) => {
+      const res = await fetch("/api/comments", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          commentId: id,
+        }),
+      });
+
+      const body = await res.json();
+      console.log(body);
+      return body;
+    },
+  });
+
   const queryClient = useQueryClient();
 
   return (
@@ -411,6 +430,16 @@ export default function AppDetails({
                 </Link>
                 <div>{comment.User.name}</div>
                 <div>. {dayjs().to(comment.created_at)}</div>
+                {!!(user.user?.id === comment.userId) && (
+                  <div
+                    className=" btn-error  btn ml-auto  "
+                    onClick={() => {
+                      deleteCommentMutation.mutate(comment.id);
+                    }}
+                  >
+                    X
+                  </div>
+                )}
               </div>
               <div className="">{comment.content}</div>
             </div>

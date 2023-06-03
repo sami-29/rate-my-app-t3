@@ -52,6 +52,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       const comments = await prisma.comment.findMany();
       res.json(comments);
     }
+  } else if (req.method === "DELETE") {
+    const { commentId } = req.body;
+    const deletedComment = await prisma.comment.delete({
+      where: {
+        id: commentId,
+      },
+    });
+
+    res.json(deletedComment);
   }
 };
 
