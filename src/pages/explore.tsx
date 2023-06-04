@@ -47,7 +47,7 @@ export default function Explore() {
   const [sortOrder, setSortOrder] = useState("desc");
 
   if (isLoading) {
-    return <span className="loading loading-dots loading-lg"></span>;
+    return <span className="loading-dots loading-lg loading"></span>;
   }
 
   if (!data) {
@@ -133,6 +133,7 @@ export default function Explore() {
                 className={`join-item btn `}
                 type="radio"
                 name="sort-order"
+                defaultChecked
                 aria-label="Descending"
                 onClick={() => setSortOrder("desc")}
               />
@@ -153,6 +154,7 @@ export default function Explore() {
                 className={`join-item btn `}
                 type="radio"
                 name="sort-by"
+                defaultChecked
                 aria-label="Date of Creation"
                 onClick={() => setSortBy("creationDate")}
               />
