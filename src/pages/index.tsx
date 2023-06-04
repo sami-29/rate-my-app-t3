@@ -4,13 +4,8 @@ import { SignedIn, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { App, AppImage, User } from "@prisma/client";
-import Image from "next/image";
-import relativeTime from "dayjs/plugin/relativeTime";
-import dayjs from "dayjs";
 import { withServerSideAuth } from "@clerk/nextjs/ssr";
 import AppCard from "@/components/AppCard";
-
-dayjs.extend(relativeTime);
 
 const Home: NextPage = () => {
   const user = useUser();
@@ -32,7 +27,7 @@ const Home: NextPage = () => {
 
   console.log(data);
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <span className="loading loading-dots loading-lg"></span>;
   }
 
   if (!data) {

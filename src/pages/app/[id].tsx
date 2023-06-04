@@ -10,6 +10,7 @@ import { SignInButton, useUser } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { useEffect, useState } from "react";
 
 interface AppDetailsProps {
   app:
@@ -213,12 +214,27 @@ function getRatingsCount(ratings: Rating[], type: string) {
 }
 
 export default function AppDetails({ app, id }: AppDetailsProps) {
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (message) {
+      timer = setTimeout(() => {
+        setMessage("");
+      }, 6000);
+    }
+
+    return () => clearTimeout(timer);
+  }, [message]);
+
   const mutation = useMutation({
     mutationFn: async (data: any) => {
       submitRatingAndComment(data, user.user?.id!, app?.id!, app?.User.name!);
     },
     onSuccess: () => {
       router.push(`/app/${id}`);
+      setMessage("Review submitted successfully!");
     },
   });
   const {
@@ -269,10 +285,31 @@ export default function AppDetails({ app, id }: AppDetailsProps) {
       console.log(body);
       return body;
     },
+    onSuccess: (res) => {
+      router.push(`/app/${app.id}`);
+    },
   });
 
   return (
     <div className="max-w-full overflow-hidden">
+      {message && (
+        <div className="alert alert-success">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 shrink-0 stroke-current"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span>{message}</span>
+        </div>
+      )}
       {!!(user.user?.id === app.User.id) && (
         <div
           className=" btn-error btn-sm btn  absolute top-[0.5rem] md:btn-md  sm:right-4 sm:top-16 "
@@ -338,40 +375,47 @@ export default function AppDetails({ app, id }: AppDetailsProps) {
                   {getAverageRatingByType(app.Ratings, "IDEA")}
                 </div>
               </div>
-              <div className="flex gap-4">
-                <a
-                  href={app.url ? ensureAbsoluteURL(app.url) : ""}
-                  className={`btn w-24 ${
-                    app.url ? "btn-primary link" : "btn-disabled"
+              <ul className="menu rounded-box menu-vertical bg-base-200 lg:menu-horizontal">
+                <li
+                  className={`${app.url ? "" : "disabled cursor-not-allowed"}`}
+                >
+                  <a
+                    className={`${
+                      app.url ? "" : "disabled cursor-not-allowed"
+                    }`}
+                    href={app.url ? ensureAbsoluteURL(app.url) : ""}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    URL
+                  </a>
+                </li>
+                <li
+                  className={`${
+                    app.sourceCodeUrl ? "" : "disabled cursor-not-allowed"
                   }`}
-                  target="_blank"
-                  rel="noopener noreferrer"
                 >
-                  URL
-                </a>
-                <a
-                  href={
-                    app.sourceCodeUrl
-                      ? ensureAbsoluteURL(app.sourceCodeUrl)
-                      : ""
-                  }
-                  className={`btn ${
-                    app.sourceCodeUrl ? "btn-primary link" : "btn-disabled"
-                  }`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Source code URL
-                </a>
-                <a
-                  href={""}
-                  className="btn-disabled btn"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Donation
-                </a>
-              </div>
+                  <a
+                    className={`${
+                      app.sourceCodeUrl ? "" : "disabled cursor-not-allowed"
+                    }`}
+                    href={
+                      app.sourceCodeUrl
+                        ? ensureAbsoluteURL(app.sourceCodeUrl)
+                        : ""
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Source code URL
+                  </a>
+                </li>
+                <li className="disabled ">
+                  <a className="cursor-not-allowed" href={""}>
+                    Donation
+                  </a>
+                </li>
+              </ul>
             </div>
             {user.isSignedIn ? (
               !(user.user?.id === app.User.id) && (

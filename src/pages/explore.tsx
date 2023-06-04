@@ -47,7 +47,7 @@ export default function Explore() {
   const [sortOrder, setSortOrder] = useState("desc");
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <span className="loading loading-dots loading-lg"></span>;
   }
 
   if (!data) {
@@ -182,5 +182,4 @@ export default function Explore() {
       </div>
     </div>
   );
-
 }
