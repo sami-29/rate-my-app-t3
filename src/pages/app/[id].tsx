@@ -91,7 +91,9 @@ async function submitRatingAndComment(
   data: Record<string, string>,
   userId: string,
   appId: string,
-  username: string
+  username: string,
+  appName: string,
+  appUserId: string
 ) {
   const {
     Comment,
@@ -182,8 +184,8 @@ async function submitRatingAndComment(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        content: `User ${username} submitted a rating and comment for app with ID ${appId}`,
-        userId: userId,
+        content: `User ${username} submitted a rating for ${appName}`,
+        userId: appUserId,
       }),
     });
 
@@ -230,7 +232,14 @@ export default function AppDetails({ app, id }: AppDetailsProps) {
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
-      submitRatingAndComment(data, user.user?.id!, app?.id!, app?.User.name!);
+      submitRatingAndComment(
+        data,
+        user.user?.id!,
+        app?.id!,
+        user.user?.username!,
+        app?.title!,
+        app?.User.id!
+      );
     },
     onSuccess: () => {
       router.push(`/app/${id}`);

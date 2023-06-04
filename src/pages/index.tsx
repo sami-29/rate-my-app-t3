@@ -35,7 +35,9 @@ const Home: NextPage = () => {
       <h1 className="mb-4 text-center  text-3xl md:mb-8">Your Apps</h1>
       {data.length === 0 && (
         <div>
-          You have no apps yet if you wish to create an app or explore apps
+          You have no apps yet if you wish to{" "}
+          <span className="btn-primary btn">create an app</span> or{" "}
+          <span className="btn-ghost btn">explore</span>
         </div>
       )}
       {!!isLoading && <span className="loading-dots loading-lg loading"></span>}
