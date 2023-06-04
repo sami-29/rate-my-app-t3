@@ -11,6 +11,23 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { useForm, SubmitHandler } from "react-hook-form";
 
+interface AppDetailsProps {
+  app:
+    | (App & {
+        User: User;
+        Ratings: Rating[];
+        Comments: (Comment & {
+          User: User;
+        })[];
+        Donations: (Donation & {
+          User: User;
+        })[];
+        AppImages: AppImage[];
+      })
+    | null;
+  id: string;
+}
+
 dayjs.extend(relativeTime);
 
 export async function getServerSideProps(context: any) {
@@ -39,6 +56,17 @@ export async function getServerSideProps(context: any) {
     },
   });
 
+  if (res) {
+    await prisma.app.update({
+      where: {
+        id,
+      },
+      data: {
+        views: res.views + 1,
+      },
+    });
+  }
+
   return {
     props: {
       app: JSON.parse(JSON.stringify(res)) as
@@ -61,7 +89,8 @@ export async function getServerSideProps(context: any) {
 async function submitRatingAndComment(
   data: Record<string, string>,
   userId: string,
-  appId: string
+  appId: string,
+  username: string
 ) {
   const {
     Comment,
@@ -131,7 +160,6 @@ async function submitRatingAndComment(
       commentResponse = await commentPromise;
     }
 
-    // Check the responses for any error status codes and handle accordingly
     const responses: (Response | null)[] = [...ratingResponses];
     if (commentResponse) {
       responses.push(commentResponse);
@@ -145,10 +173,26 @@ async function submitRatingAndComment(
     }
 
     // All requests were successful
-    console.log("Rating and comment submitted successfully");
+
+    // Create notification
+    const notificationResponse = await fetch("/api/notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: `User ${username} submitted a rating and comment for app with ID ${appId}`,
+        userId: userId,
+      }),
+    });
+
+    if (notificationResponse.ok) {
+      console.log("Rating, comment, and notification submitted successfully");
+    } else {
+      console.error("Failed to create notification");
+    }
   } catch (error) {
     console.error(error);
-    // Handle error
   }
 }
 
@@ -160,7 +204,7 @@ function getAverageRatingByType(ratings: Rating[], type: string) {
   );
   const average = sum / filteredRatings.length;
 
-  return average.toFixed(1) !== "NaN" ? `${average.toFixed(1)} ⭐️` : ""; // Return the average rating with one decimal place
+  return average.toFixed(1) !== "NaN" ? `${average.toFixed(1)} ⭐️` : "";
 }
 
 function getRatingsCount(ratings: Rating[], type: string) {
@@ -168,28 +212,10 @@ function getRatingsCount(ratings: Rating[], type: string) {
   return filteredRatings.length > 0 ? `(${filteredRatings.length})` : `(${0})`;
 }
 
-export default function AppDetails({
-  app,
-  id,
-}: {
-  app:
-    | (App & {
-        User: User;
-        Ratings: Rating[];
-        Comments: (Comment & {
-          User: User;
-        })[];
-        Donations: (Donation & {
-          User: User;
-        })[];
-        AppImages: AppImage[];
-      })
-    | null;
-  id: string;
-}) {
+export default function AppDetails({ app, id }: AppDetailsProps) {
   const mutation = useMutation({
     mutationFn: async (data: any) => {
-      submitRatingAndComment(data, user.user?.id!, app?.id!);
+      submitRatingAndComment(data, user.user?.id!, app?.id!, app?.User.name!);
     },
     onSuccess: () => {
       router.push(`/app/${id}`);
@@ -245,13 +271,11 @@ export default function AppDetails({
     },
   });
 
-  const queryClient = useQueryClient();
-
   return (
     <div className="max-w-full overflow-hidden">
       {!!(user.user?.id === app.User.id) && (
         <div
-          className=" btn-error btn-sm btn  absolute top-[0.5rem] md:btn-md  sm:right-4 sm:top-0 "
+          className=" btn-error btn-sm btn  absolute top-[0.5rem] md:btn-md  sm:right-4 sm:top-16 "
           onClick={() => {
             deleteAppMutation.mutate(app.id);
           }}
@@ -259,9 +283,9 @@ export default function AppDetails({
           Delete
         </div>
       )}
-      <div className="text-center text-5xl text-primary">{app.title}</div>
+      <div className="text-center text-5xl text-primary ">{app.title}</div>
       <div className="mt-16  flex flex-col gap-20 md:flex-row ">
-        <div className="carousel-vertical carousel rounded-box relative h-64 w-screen  flex-shrink-0 sm:h-96 sm:w-96">
+        <div className="carousel-vertical carousel rounded-box relative h-64 w-screen  flex-shrink-0 sm:h-96 md:w-96">
           {app.AppImages.map((image) => {
             return (
               <div key={image.id} className="carousel-item  h-full">
@@ -270,8 +294,8 @@ export default function AppDetails({
             );
           })}
         </div>
-        <div className="flex flex-col gap-6">
-          <div className="flex gap-4">
+        <div className="mx-auto flex w-full flex-col gap-6">
+          <div className="flex  gap-4">
             <div className="self-center">Created By </div>
             <div className="flex gap-2">
               <Image
@@ -283,10 +307,11 @@ export default function AppDetails({
               ></Image>
               <div className="self-center">{app.User.name}</div>
             </div>
-            <div className="ml-auto self-center">
-              posted {dayjs().to(app.created_at)}
+            <div className="self-center">
+              . posted {dayjs().to(app.created_at)}
             </div>
           </div>
+          <div>{`Seen ${app.views} amount of times`}</div>
           <div className="min-h-[8rem] border border-info-content p-4">
             {app.description}
           </div>
@@ -294,7 +319,7 @@ export default function AppDetails({
             <div className="flex flex-col gap-6">
               <div className="">
                 Platform(s){" "}
-                <span className="btn-info btn-sm btn ">{app.type}</span>
+                <span className="badge-primary badge ">{app.type}</span>
               </div>
               <div className="flex flex-col gap-3 ">
                 <div className="flex gap-2">
@@ -411,6 +436,7 @@ export default function AppDetails({
       </div>
 
       <div className="mx-auto mt-10 flex max-w-screen-xl  flex-col gap-6 pt-4">
+        <h3 className="text-xl text-info-content">Comments</h3>
         {app.Comments.map((comment) => {
           return (
             <div

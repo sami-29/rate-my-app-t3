@@ -8,6 +8,7 @@ import Image from "next/image";
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
 import { withServerSideAuth } from "@clerk/nextjs/ssr";
+import AppCard from "@/components/AppCard";
 
 dayjs.extend(relativeTime);
 
@@ -49,46 +50,7 @@ const Home: NextPage = () => {
 
       <div className="grid  gap-6  sm:grid-cols-2  xl:grid-cols-3">
         {data.map((app) => {
-          return (
-            <div key={app.id} className="rounded-xl">
-              <div className="relative  h-64 ">
-                <Image
-                  src={app.AppImages[0]?.url!}
-                  alt={""}
-                  fill
-                  className="rounded-xl object-cover"
-                ></Image>
-              </div>
-              <div className="flex gap-4 pt-2">
-                <div className="relative flex-shrink-0 ">
-                  <Link href={`/user/${app.User.id}`}>
-                    <Image
-                      src={app.User.profilePic}
-                      alt=""
-                      height={32}
-                      width={32}
-                      className="rounded-full pt-1"
-                    ></Image>
-                  </Link>
-                </div>
-                <div className="flex flex-col overflow-hidden text-ellipsis">
-                  <div className="text-2xl">{app.title}</div>
-                  <div className="max-h-[3rem] overflow-hidden break-words">
-                    {app.description}
-                  </div>
-                  <div className="flex-shrink-0">
-                    {dayjs().to(app.created_at as unknown as string)}
-                  </div>
-                </div>
-                <Link
-                  href={`/app/${app.id}`}
-                  className="btn-secondary btn ml-auto "
-                >
-                  More details
-                </Link>
-              </div>
-            </div>
-          );
+          return <AppCard key={app.id} app={app}></AppCard>;
         })}
       </div>
       {/* The button to open modal */}

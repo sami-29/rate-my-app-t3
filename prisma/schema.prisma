@@ -46,6 +46,7 @@ model App {
   updated_at    DateTime   @updatedAt
   title         String     @db.VarChar(63)
   description   String     @db.VarChar(1023)
+  views Int @default(0)
   AppImages      AppImage[]
   url           String?
   sourceCodeUrl String?

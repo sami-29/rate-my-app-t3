@@ -1,10 +1,22 @@
 import { SignInButton, SignedIn, UserButton, useUser } from "@clerk/nextjs";
 import { Notification } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/router";
+
 import Link from "next/link";
+import { useState } from "react";
 
 export default function Navbar() {
   const user = useUser();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      router.push(`/explore?query=${searchQuery}`);
+    }
+  };
 
   const { data, error, failureReason } = useQuery({
     queryKey: ["Notifications"],
@@ -89,6 +101,9 @@ export default function Navbar() {
             type="text"
             placeholder="Search..."
             className="input-bordered input input-sm mr-2 md:input-md "
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearch}
           />
         </div>
         {!user.isSignedIn && (
