@@ -21,14 +21,14 @@ export default function Navbar() {
   const { data, error, failureReason } = useQuery({
     queryKey: ["Notifications"],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      params.append("userId", user.user?.id!);
-
-      const res = await fetch(`/api/notifications?${params.toString()}`, {
-        method: "GET",
-      });
+      const res = await fetch(
+        `/api/notifications?userId=${encodeURIComponent(user.user?.id!)}`,
+        {
+          method: "GET",
+        }
+      );
       const body = await res.json();
-
+      console.log(body);
       return body as Notification[];
     },
   });
@@ -132,12 +132,19 @@ export default function Navbar() {
                       d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                     />
                   </svg>
-                  <span className="badge-primary badge badge-xs indicator-item"></span>
+                  <span
+                    className={`${
+                      !data || data.length === 0
+                        ? ""
+                        : "btn-ghost btn-circle btn"
+                    }  indicator-item mx-2`}
+                  ></span>
                 </div>
               </label>
+
               <ul
                 tabIndex={0}
-                className="dropdown-content menu rounded-box w-52 bg-base-100 p-2 shadow"
+                className="dropdown-content menu rounded-box w-52 max-w-[5rem] bg-base-100 p-2 shadow"
               >
                 {!data ||
                   (data.length === 0 && (
@@ -148,7 +155,7 @@ export default function Navbar() {
                 {data?.map((notif) => {
                   return (
                     <li>
-                      <a>{notif.content}</a>
+                      <a className="truncate">{notif.content}</a>
                     </li>
                   );
                 })}

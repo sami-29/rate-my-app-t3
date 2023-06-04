@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import { useState } from "react";
 import AppCard from "@/components/AppCard";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 dayjs.extend(relativeTime);
 
@@ -83,105 +84,117 @@ export default function Explore() {
   }
 
   return (
-    <div className="container mx-auto mt-8">
-      <div className="md:max-w-[90%]">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-medium">Filters</h3>
-          <div className="flex gap-4">
-            <span className="self-center text-sm font-medium">
-              By Platform:
-            </span>
-            <div className="join">
-              <input
-                className={`join-item btn`}
-                type="radio"
-                name="platform"
-                aria-label="All"
-                onClick={() => setFilterType("All")}
-                defaultChecked
-              />
-              <input
-                className={`join-item btn`}
-                type="radio"
-                name="platform"
-                aria-label="Web"
-                onClick={() => setFilterType("WEB")}
-              />
-              <input
-                className={`join-item btn`}
-                type="radio"
-                name="platform"
-                aria-label="Mobile"
-                onClick={() => setFilterType("MOBILE")}
-              />
-              <input
-                className={`join-item btn`}
-                type="radio"
-                name="platform"
-                aria-label="Desktop"
-                onClick={() => setFilterType("DESKTOP")}
-              />
+    <>
+      <Head>
+        <title>Explore</title>
+        <meta name="description" content="Rate my app website" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <div className="container mx-auto mt-8">
+        <div className="md:max-w-[90%]">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-lg font-medium">Filters</h3>
+            <div className="flex gap-4">
+              <span className="self-center text-sm font-medium">
+                By Platform:
+              </span>
+              <div className="join">
+                <input
+                  className={`join-item btn`}
+                  type="radio"
+                  name="platform"
+                  aria-label="All"
+                  onClick={() => setFilterType("All")}
+                  defaultChecked
+                />
+                <input
+                  className={`join-item btn`}
+                  type="radio"
+                  name="platform"
+                  aria-label="Web"
+                  onClick={() => setFilterType("WEB")}
+                />
+                <input
+                  className={`join-item btn`}
+                  type="radio"
+                  name="platform"
+                  aria-label="Mobile"
+                  onClick={() => setFilterType("MOBILE")}
+                />
+                <input
+                  className={`join-item btn`}
+                  type="radio"
+                  name="platform"
+                  aria-label="Desktop"
+                  onClick={() => setFilterType("DESKTOP")}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mb-4 flex flex-wrap items-center justify-between">
+            <h3 className="text-lg font-medium">Sort</h3>
+            <div className="flex gap-4">
+              <span className="self-center text-sm font-medium">
+                Sort Order:
+              </span>
+              <div className="join">
+                <input
+                  className={`join-item btn `}
+                  type="radio"
+                  name="sort-order"
+                  defaultChecked
+                  aria-label="Descending"
+                  onClick={() => setSortOrder("desc")}
+                />
+                <input
+                  className={`join-item btn`}
+                  type="radio"
+                  name="sort-order"
+                  aria-label="Ascending"
+                  onClick={() => setSortOrder("asc")}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <span className="self-center text-sm font-medium">Sort By:</span>
+              <div className="join">
+                <input
+                  className={`join-item btn `}
+                  type="radio"
+                  name="sort-by"
+                  defaultChecked
+                  aria-label="Date of Creation"
+                  onClick={() => setSortBy("creationDate")}
+                />
+                <input
+                  className={`join-item btn`}
+                  type="radio"
+                  name="sort-by"
+                  aria-label="Best Average Rating"
+                  onClick={() => setSortBy("averageRating")}
+                />
+                <input
+                  className={`join-item btn`}
+                  type="radio"
+                  name="sort-by"
+                  aria-label="Most Viewed"
+                  onClick={() => setSortBy("views")}
+                />
+              </div>
             </div>
           </div>
         </div>
-        <div className="mb-4 flex flex-wrap items-center justify-between">
-          <h3 className="text-lg font-medium">Sort</h3>
-          <div className="flex gap-4">
-            <span className="self-center text-sm font-medium">Sort Order:</span>
-            <div className="join">
-              <input
-                className={`join-item btn `}
-                type="radio"
-                name="sort-order"
-                defaultChecked
-                aria-label="Descending"
-                onClick={() => setSortOrder("desc")}
-              />
-              <input
-                className={`join-item btn`}
-                type="radio"
-                name="sort-order"
-                aria-label="Ascending"
-                onClick={() => setSortOrder("asc")}
-              />
-            </div>
-          </div>
 
-          <div className="flex gap-4">
-            <span className="self-center text-sm font-medium">Sort By:</span>
-            <div className="join">
-              <input
-                className={`join-item btn `}
-                type="radio"
-                name="sort-by"
-                defaultChecked
-                aria-label="Date of Creation"
-                onClick={() => setSortBy("creationDate")}
-              />
-              <input
-                className={`join-item btn`}
-                type="radio"
-                name="sort-by"
-                aria-label="Best Average Rating"
-                onClick={() => setSortBy("averageRating")}
-              />
-              <input
-                className={`join-item btn`}
-                type="radio"
-                name="sort-by"
-                aria-label="Most Viewed"
-                onClick={() => setSortBy("views")}
-              />
-            </div>
-          </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {sortedApps.length === 0 && (
+            <div className="text-2xl text-error">There are no apps</div>
+          )}
+          {sortedApps.map((app) => (
+            <AppCard key={app.id} app={app} />
+          ))}
         </div>
       </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {sortedApps.map((app) => (
-          <AppCard key={app.id} app={app} />
-        ))}
-      </div>
-    </div>
+    </>
   );
 }

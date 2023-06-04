@@ -1,5 +1,4 @@
 import { prisma } from "@/server/db";
-import { AppType } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -13,7 +12,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         console.log(query);
         apps = await prisma.app.findMany({
           take: 100,
-
           where: {
             OR: [
               { title: { contains: query as string } },

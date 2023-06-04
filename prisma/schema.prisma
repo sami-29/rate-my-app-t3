@@ -14,7 +14,6 @@ model User {
   email        String         @unique 
   created_at   DateTime       @default(now())
   updated_at   DateTime       @updatedAt
-  profilePic String
   Apps          App[]
   Ratings       Rating[]
   Comments      Comment[]

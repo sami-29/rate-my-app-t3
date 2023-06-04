@@ -9,26 +9,17 @@ import AppCard from "@/components/AppCard";
 
 const Home: NextPage = () => {
   const user = useUser();
-  const { data, isLoading, failureReason } = useQuery(
-    ["getUserApps"],
-    async () => {
-      const params = new URLSearchParams();
-      params.append("userId", user.user?.id!);
+  const { data, isLoading } = useQuery(["getUserApps"], async () => {
+    const params = new URLSearchParams();
+    params.append("userId", user.user?.id!);
 
-      const res = await fetch(`/api/apps/getAll?${params.toString()}`, {
-        method: "GET",
-      });
-      const body = await res.json();
-      console.log(body);
+    const res = await fetch(`/api/apps/getAll?${params.toString()}`, {
+      method: "GET",
+    });
+    const body = await res.json();
 
-      return body as (App & { AppImages: AppImage[]; User: User })[];
-    }
-  );
-
-  console.log(data);
-  if (isLoading) {
-    return <span className="loading loading-dots loading-lg"></span>;
-  }
+    return body as (App & { AppImages: AppImage[]; User: User })[];
+  });
 
   if (!data) {
     return <div>No data found</div>;
@@ -42,7 +33,12 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <h1 className="mb-4 text-center  text-3xl md:mb-8">Your Apps</h1>
-
+      {data.length === 0 && (
+        <div>
+          You have no apps yet if you wish to create an app or explore apps
+        </div>
+      )}
+      {!!isLoading && <span className="loading-dots loading-lg loading"></span>}
       <div className="grid  gap-6  sm:grid-cols-2  xl:grid-cols-3">
         {data.map((app) => {
           return <AppCard key={app.id} app={app}></AppCard>;
@@ -81,9 +77,6 @@ export const getServerSideProps = withServerSideAuth(async ({ req }) => {
       },
     };
   }
-
-  // Load any data your application needs and pass to props
-
   return { props: {} };
 });
 
