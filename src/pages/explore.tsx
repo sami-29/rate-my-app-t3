@@ -44,7 +44,7 @@ export default function Explore() {
           <div className="btn-outline btn text-xs ">Best average rating</div>
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-6  sm:grid-cols-2  xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6  sm:grid-cols-2  xl:grid-cols-3">
         {data.map((app) => {
           return (
             <div key={app.id} className="rounded-xl">

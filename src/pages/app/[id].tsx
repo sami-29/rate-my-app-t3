@@ -159,7 +159,13 @@ function getAverageRatingByType(ratings: Rating[], type: string) {
     0
   );
   const average = sum / filteredRatings.length;
-  return average.toFixed(1); // Return the average rating with one decimal place
+
+  return average.toFixed(1) !== "NaN" ? `${average.toFixed(1)} ⭐️` : ""; // Return the average rating with one decimal place
+}
+
+function getRatingsCount(ratings: Rating[], type: string) {
+  const filteredRatings = ratings.filter((rating) => rating.type === type);
+  return filteredRatings.length > 0 ? `(${filteredRatings.length})` : `(${0})`;
 }
 
 export default function AppDetails({
@@ -208,16 +214,9 @@ export default function AppDetails({
   const router = useRouter();
   const deleteAppMutation = useMutation({
     mutationKey: ["DeleteApp"],
-    mutationFn: async (id: string) => {
-      const res = await fetch("/api/apps/delete", {
+    mutationFn: async function deleteApp(id: string) {
+      const res = await fetch(`/api/apps/delete?id=${id}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: JSON.stringify({
-          id: id,
-        }),
       });
 
       const body = await res.json();
@@ -232,15 +231,12 @@ export default function AppDetails({
 
   const deleteCommentMutation = useMutation({
     mutationKey: ["DeleteComment"],
-    mutationFn: async (id: string) => {
-      const res = await fetch("/api/comments", {
+    mutationFn: async function deleteApp(id: string) {
+      const res = await fetch(`/api/comments?id=${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          commentId: id,
-        }),
       });
 
       const body = await res.json();
@@ -252,10 +248,10 @@ export default function AppDetails({
   const queryClient = useQueryClient();
 
   return (
-    <div className="">
+    <div className="max-w-full overflow-hidden">
       {!!(user.user?.id === app.User.id) && (
         <div
-          className=" btn-error  btn absolute right-4  "
+          className=" btn-error btn-sm btn  absolute top-[0.5rem] md:btn-md  sm:right-4 sm:top-0 "
           onClick={() => {
             deleteAppMutation.mutate(app.id);
           }}
@@ -264,8 +260,8 @@ export default function AppDetails({
         </div>
       )}
       <div className="text-center text-5xl text-primary">{app.title}</div>
-      <div className="mt-16  flex gap-20 ">
-        <div className="carousel-vertical carousel rounded-box relative  h-96 w-96 flex-shrink-0">
+      <div className="mt-16  flex flex-col gap-20 md:flex-row ">
+        <div className="carousel-vertical carousel rounded-box relative h-64 w-screen  flex-shrink-0 sm:h-96 sm:w-96">
           {app.AppImages.map((image) => {
             return (
               <div key={image.id} className="carousel-item  h-full">
@@ -291,10 +287,10 @@ export default function AppDetails({
               posted {dayjs().to(app.created_at)}
             </div>
           </div>
-          <div className="min-h-[8rem]  border border-info-content p-4">
+          <div className="min-h-[8rem] border border-info-content p-4">
             {app.description}
           </div>
-          <div className="flex gap-28">
+          <div className="flex flex-col md:flex-row md:gap-28 ">
             <div className="flex flex-col gap-6">
               <div className="">
                 Platform(s){" "}
@@ -302,16 +298,19 @@ export default function AppDetails({
               </div>
               <div className="flex flex-col gap-3 ">
                 <div className="flex gap-2">
-                  <span className="w-24">UI Rating</span>{" "}
-                  {getAverageRatingByType(app.Ratings, "UI")} ⭐️
+                  <span className="w-24">UI Rating</span>
+                  {`${getRatingsCount(app.Ratings, "UI")} `}
+                  {getAverageRatingByType(app.Ratings, "UI")}
                 </div>
                 <div className="flex gap-2">
                   <span className="w-24">CODE Rating</span>
-                  {getAverageRatingByType(app.Ratings, "CODE")} ⭐️
+                  {`${getRatingsCount(app.Ratings, "CODE")} `}
+                  {getAverageRatingByType(app.Ratings, "CODE")}
                 </div>
                 <div className="flex gap-2">
-                  <span className="w-24">IDEA Rating</span>{" "}
-                  {getAverageRatingByType(app.Ratings, "IDEA")} ⭐️
+                  <span className="w-24">IDEA Rating</span>
+                  {`${getRatingsCount(app.Ratings, "IDEA")} `}
+                  {getAverageRatingByType(app.Ratings, "IDEA")}
                 </div>
               </div>
               <div className="flex gap-4">

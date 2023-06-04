@@ -88,7 +88,7 @@ export default function Navbar() {
           <input
             type="text"
             placeholder="Search..."
-            className="input-bordered input mr-2 "
+            className="input-bordered input input-sm mr-2 md:input-md "
           />
         </div>
         {!user.isSignedIn && (

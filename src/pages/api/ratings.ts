@@ -5,14 +5,43 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
     const { score, type, appId, userId } = req.body;
     console.log(req.body);
-    const rating = await prisma.rating.create({
-      data: {
-        score: score,
-        type: type,
-        appId: appId,
+
+    // Check if a rating already exists for the user and app combination
+    const existingRating = await prisma.rating.findFirst({
+      where: {
         userId: userId,
+        appId: appId,
+        type: type,
       },
     });
+
+    console.log(existingRating);
+
+    let rating;
+    if (existingRating) {
+      // Update the existing rating with new values
+      rating = await prisma.rating.update({
+        where: {
+          id: existingRating.id,
+        },
+        data: {
+          score: score,
+          type: type,
+        },
+      });
+
+      console.log(rating);
+    } else {
+      // Create a new rating
+      rating = await prisma.rating.create({
+        data: {
+          score: score,
+          type: type,
+          appId: appId,
+          userId: userId,
+        },
+      });
+    }
 
     res.json({
       id: rating.id,

@@ -45,9 +45,9 @@ const Home: NextPage = () => {
         <meta name="description" content="Rate my app website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <h1 className="text-center text-3xl">Your Apps</h1>
+      <h1 className="mb-4 text-center  text-3xl md:mb-8">Your Apps</h1>
 
-      <div className="grid grid-cols-4 gap-6  sm:grid-cols-2  xl:grid-cols-3">
+      <div className="grid  gap-6  sm:grid-cols-2  xl:grid-cols-3">
         {data.map((app) => {
           return (
             <div key={app.id} className="rounded-xl">

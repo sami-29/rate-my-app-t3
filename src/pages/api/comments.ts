@@ -53,12 +53,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       res.json(comments);
     }
   } else if (req.method === "DELETE") {
-    const { commentId } = req.body;
+    const { id } = req.query;
+
     const deletedComment = await prisma.comment.delete({
       where: {
-        id: commentId,
+        id: String(id),
       },
     });
+
+    console.log(deletedComment);
 
     res.json(deletedComment);
   }

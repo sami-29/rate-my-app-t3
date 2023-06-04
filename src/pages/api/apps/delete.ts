@@ -4,21 +4,37 @@ import { NextApiRequest, NextApiResponse } from "next";
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   console.log("running");
   if (req.method === "DELETE") {
-    const { id } = req.body;
+    const { id } = req.query;
     console.log(`deleting ${id}`);
-    const deletedApp = await prisma.app.delete({
-      where: {
-        id: id,
-      },
-      include: {
-        AppImages: true,
-        Comments: true,
-        Ratings: true,
-        Donations: true,
-      },
-    });
 
-    res.json(deletedApp);
+    try {
+      await prisma.$transaction(async (prisma) => {
+        // Delete associated AppImages
+        await prisma.appImage.deleteMany({
+          where: {
+            appId: String(id),
+          },
+        });
+
+        // Delete the App
+        const deletedApp = await prisma.app.delete({
+          where: {
+            id: String(id),
+          },
+          include: {
+            Comments: true,
+            Ratings: true,
+            Donations: true,
+          },
+        });
+
+        console.log(deletedApp);
+        res.json(deletedApp);
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal server error" });
+    }
   }
 };
 
