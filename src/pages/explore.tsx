@@ -20,7 +20,7 @@ const fetchApps = async (query: string) => {
   return body as (App & {
     AppImages: AppImage[];
     User: User;
-    Rating: Rating[];
+    Ratings: Rating[];
   })[];
 };
 
@@ -48,7 +48,7 @@ export default function Explore() {
   const [sortOrder, setSortOrder] = useState("desc");
 
   if (isLoading) {
-    return <span className="loading-dots loading-lg loading"></span>;
+    return <span className="loading loading-dots loading-lg"></span>;
   }
 
   if (!data) {
@@ -71,8 +71,9 @@ export default function Explore() {
     });
   } else if (sortBy === "averageRating") {
     sortedApps.sort((a, b) => {
-      const avgRatingA = getAverageRating(a.Rating);
-      const avgRatingB = getAverageRating(b.Rating);
+      console.log(a.Ratings, b.Ratings);
+      const avgRatingA = getAverageRating(a.Ratings);
+      const avgRatingB = getAverageRating(b.Ratings);
       return sortOrder === "desc"
         ? avgRatingB - avgRatingA
         : avgRatingA - avgRatingB;
@@ -91,7 +92,7 @@ export default function Explore() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="container mx-auto mt-8">
-        <div className="md:max-w-[90%]">
+        <div className="sm:translate-y-[-5rem] md:max-w-[90%]">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-medium">Filters</h3>
             <div className="flex gap-4">

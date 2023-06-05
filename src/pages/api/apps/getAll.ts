@@ -23,6 +23,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           include: {
             AppImages: true,
             User: true,
+            Ratings: true,
           },
         });
       } else {
@@ -31,6 +32,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           include: {
             AppImages: true,
             User: true,
+            Ratings: true,
           },
         });
       }

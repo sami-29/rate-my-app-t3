@@ -94,7 +94,7 @@ async function submitRatingAndComment(
   username: string,
   appName: string,
   appUserId: string
-) {
+): Promise<void> {
   const {
     Comment,
     "UI-rating": uiRating,
@@ -102,7 +102,7 @@ async function submitRatingAndComment(
     "IDEA-rating": ideaRating,
   } = data;
 
-  const ratingPromises = [
+  const ratingPromises: Promise<Response>[] = [
     fetch("/api/ratings", {
       method: "POST",
       headers: {
@@ -110,9 +110,9 @@ async function submitRatingAndComment(
       },
       body: JSON.stringify({
         type: "UI",
-        score: parseInt(uiRating!),
-        appId: appId,
-        userId: userId,
+        score: parseInt(uiRating!, 10) || 1,
+        appId,
+        userId,
       }),
     }),
     fetch("/api/ratings", {
@@ -122,9 +122,9 @@ async function submitRatingAndComment(
       },
       body: JSON.stringify({
         type: "CODE",
-        score: parseInt(codeRating!),
-        appId: appId,
-        userId: userId,
+        score: parseInt(codeRating!, 10) || 1,
+        appId,
+        userId,
       }),
     }),
     fetch("/api/ratings", {
@@ -134,9 +134,9 @@ async function submitRatingAndComment(
       },
       body: JSON.stringify({
         type: "IDEA",
-        score: parseInt(ideaRating!),
-        appId: appId,
-        userId: userId,
+        score: parseInt(ideaRating!, 10) || 1,
+        appId,
+        userId,
       }),
     }),
   ];
@@ -150,8 +150,8 @@ async function submitRatingAndComment(
       },
       body: JSON.stringify({
         content: Comment,
-        userId: userId,
-        appId: appId,
+        userId,
+        appId,
       }),
     });
   }
@@ -169,7 +169,7 @@ async function submitRatingAndComment(
     }
 
     const errorResponses = responses.filter(
-      (response) => response && !response.ok
+      (response): response is Response => response! && !response.ok
     );
     if (errorResponses.length > 0) {
       throw new Error("Error submitting rating and comment");
@@ -242,14 +242,13 @@ export default function AppDetails({ app, id }: AppDetailsProps) {
       );
     },
     onSuccess: () => {
-      router.push(`/app/${id}`);
       setMessage("Review submitted successfully!");
+      router.push(`/app/${id}`);
     },
   });
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<any>();
   const onSubmit: SubmitHandler<any> = (data) => {
@@ -279,6 +278,8 @@ export default function AppDetails({ app, id }: AppDetailsProps) {
       router.push(`/`);
     },
   });
+  console.log(user.user?.id!);
+  console.log(id!);
 
   const deleteCommentMutation = useMutation({
     mutationKey: ["DeleteComment"],
@@ -320,26 +321,88 @@ export default function AppDetails({ app, id }: AppDetailsProps) {
         </div>
       )}
       {!!(user.user?.id === app.User.id) && (
-        <div
-          className=" btn-error btn-sm btn  absolute top-[0.5rem] md:btn-md  sm:right-4 sm:top-16 "
-          onClick={() => {
-            deleteAppMutation.mutate(app.id);
-          }}
-        >
-          Delete
-        </div>
+        <>
+          <button
+            className="btn-error btn-outline btn"
+            onClick={() => (window as any).my_modal_1.showModal()}
+          >
+            Delete
+          </button>
+          <dialog id="my_modal_1" className="modal">
+            <form method="dialog" className="modal-box">
+              <h3 className="text-lg font-bold">Hello!</h3>
+              <p className="py-4">
+                Press ESC key or click the button below to close
+              </p>
+              <div className="modal-action">
+                <button
+                  className="btn-error btn"
+                  onClick={() => {
+                    deleteAppMutation.mutate(app.id);
+                  }}
+                >
+                  Delete
+                </button>
+                <button className="btn">Close</button>
+              </div>
+            </form>
+          </dialog>
+        </>
       )}
       <div className="text-center text-5xl text-primary ">{app.title}</div>
       <div className="mt-16  flex flex-col gap-20 md:flex-row ">
-        <div className="carousel-vertical carousel rounded-box relative h-64 w-screen  flex-shrink-0 sm:h-96 md:w-96">
-          {app.AppImages.map((image) => {
+        <div className="carousel w-full">
+          {app.AppImages.map((image, index) => {
+            const previousIndex =
+              index === 0 ? app.AppImages.length - 1 : index - 1;
+            const nextIndex =
+              index === app.AppImages.length - 1 ? 0 : index + 1;
+            const previousSlideId = `slide${previousIndex}`;
+            const nextSlideId = `slide${nextIndex}`;
+
             return (
-              <div key={image.id} className="carousel-item  h-full">
-                <Image src={image.url} fill className="object-cover" alt="" />
+              <div
+                key={image.id}
+                id={`slide${index}`}
+                className="carousel-item relative w-full rounded"
+              >
+                <Image src={image.url} className="w-full" alt="" fill />
+                <div className="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between rounded">
+                  <button
+                    className="btn-circle btn"
+                    onClick={() => {
+                      const previousSlide =
+                        document.getElementById(previousSlideId);
+                      if (previousSlide) {
+                        previousSlide.scrollIntoView({
+                          behavior: "smooth",
+                          block: "center",
+                        });
+                      }
+                    }}
+                  >
+                    ❮
+                  </button>
+                  <button
+                    className="btn-circle btn"
+                    onClick={() => {
+                      const nextSlide = document.getElementById(nextSlideId);
+                      if (nextSlide) {
+                        nextSlide.scrollIntoView({
+                          behavior: "smooth",
+                          block: "center",
+                        });
+                      }
+                    }}
+                  >
+                    ❯
+                  </button>
+                </div>
               </div>
             );
           })}
         </div>
+
         <div className="mx-auto flex w-full flex-col gap-6">
           <div className="flex  gap-4">
             <div className="self-center">Created By </div>
@@ -365,7 +428,7 @@ export default function AppDetails({ app, id }: AppDetailsProps) {
             <div className="flex flex-col gap-6">
               <div className="">
                 Platform(s){" "}
-                <span className="badge-primary badge ">{app.type}</span>
+                <span className="badge badge-primary ">{app.type}</span>
               </div>
               <div className="flex flex-col gap-3 ">
                 <div className="flex gap-2">
@@ -429,7 +492,6 @@ export default function AppDetails({ app, id }: AppDetailsProps) {
             {user.isSignedIn ? (
               !(user.user?.id === app.User.id) && (
                 <div>
-                  {" "}
                   <div className="mx-auto mt-12 max-w-xs">
                     <label htmlFor="my-modal" className="btn-accent btn">
                       Leave a rating and comment
@@ -463,14 +525,14 @@ export default function AppDetails({ app, id }: AppDetailsProps) {
                             {...register("Comment")}
                             className="input-bordered input w-full max-w-xs"
                           />
-                          <div className="modal-action">
+                          <button type="submit" className="modal-action">
                             <label
                               htmlFor="my-modal"
                               className="btn-primary btn"
                             >
-                              <input type="submit" />
+                              Submit
                             </label>
-                          </div>
+                          </button>
                         </form>
                       </label>
                     </label>
@@ -490,6 +552,8 @@ export default function AppDetails({ app, id }: AppDetailsProps) {
 
       <div className="mx-auto mt-10 flex max-w-screen-xl  flex-col gap-6 pt-4">
         <h3 className="text-xl text-info-content">Comments</h3>
+        {!app.Comments ||
+          (app.Comments.length === 0 && <div>There are no comments yet!</div>)}
         {app.Comments.map((comment) => {
           return (
             <div
@@ -509,14 +573,35 @@ export default function AppDetails({ app, id }: AppDetailsProps) {
                 <div>{comment.User.name}</div>
                 <div>. {dayjs().to(comment.created_at)}</div>
                 {!!(user.user?.id === comment.userId) && (
-                  <div
-                    className=" btn-error  btn ml-auto  "
-                    onClick={() => {
-                      deleteCommentMutation.mutate(comment.id);
-                    }}
-                  >
-                    X
-                  </div>
+                  <>
+                    <button
+                      className="btn-error btn-outline btn-sm btn-circle btn ml-auto"
+                      onClick={() => (window as any).my_modal_1.showModal()}
+                    >
+                      X
+                    </button>
+                    <dialog id="my_modal_1" className="modal">
+                      <form method="dialog" className="modal-box">
+                        <h3 className="text-lg font-bold">
+                          Are you sure you want to delete your comment!
+                        </h3>
+                        <p className="py-4">
+                          Press ESC key or click the button below to close
+                        </p>
+                        <div className="modal-action">
+                          <button
+                            className="btn"
+                            onClick={() => {
+                              deleteCommentMutation.mutate(comment.id);
+                            }}
+                          >
+                            Delete
+                          </button>
+                          <button className="btn">Close</button>
+                        </div>
+                      </form>
+                    </dialog>
+                  </>
                 )}
               </div>
               <div className="">{comment.content}</div>

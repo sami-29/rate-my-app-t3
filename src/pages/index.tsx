@@ -9,20 +9,33 @@ import AppCard from "@/components/AppCard";
 
 const Home: NextPage = () => {
   const user = useUser();
-  const { data, isLoading } = useQuery(["getUserApps"], async () => {
-    const params = new URLSearchParams();
-    params.append("userId", user.user?.id!);
+  const { data, isLoading, failureReason, error } = useQuery(
+    ["getUserApps"],
+    async () => {
+      const params = new URLSearchParams();
+      params.append("userId", user.user?.id!);
 
-    const res = await fetch(`/api/apps/getAll?${params.toString()}`, {
-      method: "GET",
-    });
-    const body = await res.json();
+      const res = await fetch(`/api/apps/getAll?${params.toString()}`, {
+        method: "GET",
+      });
+      const body = await res.json();
 
-    return body as (App & { AppImages: AppImage[]; User: User })[];
-  });
+      return body as (App & { AppImages: AppImage[]; User: User })[];
+    }
+  );
+
+  if (error) {
+    <div>${error as string}</div>;
+  }
 
   if (!data) {
-    return <div>No data found</div>;
+    return (
+      <div>
+        You have no apps yet if you wish to{" "}
+        <span className="btn-primary btn">create an app</span> or{" "}
+        <span className="btn-ghost btn">explore</span>
+      </div>
+    );
   }
 
   return (
@@ -33,14 +46,8 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <h1 className="mb-4 text-center  text-3xl md:mb-8">Your Apps</h1>
-      {data.length === 0 && (
-        <div>
-          You have no apps yet if you wish to{" "}
-          <span className="btn-primary btn">create an app</span> or{" "}
-          <span className="btn-ghost btn">explore</span>
-        </div>
-      )}
-      {!!isLoading && <span className="loading-dots loading-lg loading"></span>}
+
+      {!!isLoading && <span className="loading loading-dots loading-lg"></span>}
       <div className="grid  gap-6  sm:grid-cols-2  xl:grid-cols-3">
         {data.map((app) => {
           return <AppCard key={app.id} app={app}></AppCard>;

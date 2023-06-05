@@ -70,7 +70,7 @@ export default function Navbar() {
           </label>
           <ul
             tabIndex={0}
-            className="dropdown-content menu rounded-box menu-compact mt-3 w-52 bg-base-100 p-2 shadow"
+            className="menu-compact dropdown-content menu rounded-box mt-3 w-52 bg-base-100 p-2 shadow"
           >
             <li>
               <Link href={"/"}>Home</Link>
@@ -115,7 +115,7 @@ export default function Navbar() {
         )}
         <SignedIn>
           <>
-            <button className="dropdown dropdown-end btn-ghost btn-circle btn mx-2  ">
+            <button className="dropdown-end dropdown btn-ghost btn-circle btn mx-2  ">
               <label tabIndex={0} className="cursor-pointer">
                 <div className={"indicator"}>
                   <svg
@@ -132,30 +132,28 @@ export default function Navbar() {
                       d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                     />
                   </svg>
-                  <span
-                    className={`${
-                      !data || data.length === 0
-                        ? ""
-                        : "btn-ghost btn-circle btn"
-                    }  indicator-item mx-2`}
-                  ></span>
+                  <span className={` indicator-item mx-2 `}></span>
                 </div>
               </label>
 
               <ul
                 tabIndex={0}
-                className="dropdown-content menu rounded-box w-52 max-w-[5rem] bg-base-100 p-2 shadow"
+                className="dropdown-content menu rounded-box w-52  bg-base-100 p-2 shadow"
               >
                 {!data ||
                   (data.length === 0 && (
                     <li>
-                      <a>There are no notifications for you</a>
+                      <a className="flex h-auto max-w-[16rem] cursor-pointer flex-wrap overflow-hidden">
+                        There are no notifications for you!
+                      </a>
                     </li>
                   ))}
                 {data?.map((notif) => {
                   return (
                     <li>
-                      <a className="truncate">{notif.content}</a>
+                      <a className="flex h-auto max-w-[20rem] cursor-pointer flex-wrap overflow-hidden">
+                        {notif.content}
+                      </a>
                     </li>
                   );
                 })}
