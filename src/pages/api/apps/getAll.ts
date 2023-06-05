@@ -8,34 +8,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     let apps;
 
     if (!userId) {
-      if (query && query !== "") {
-        console.log(query);
-        apps = await prisma.app.findMany({
-          take: 100,
-          where: {
-            OR: [
-              { title: { contains: query as string } },
-              { description: { contains: query as string } },
-              { type: { equals: String(query).toUpperCase() as any } },
-              { User: { name: { contains: query as string } } },
-            ],
-          },
-          include: {
-            AppImages: true,
-            User: true,
-            Ratings: true,
-          },
-        });
-      } else {
-        apps = await prisma.app.findMany({
-          take: 100,
-          include: {
-            AppImages: true,
-            User: true,
-            Ratings: true,
-          },
-        });
-      }
+      apps = await prisma.app.findMany({
+        take: 40,
+        include: {
+          AppImages: true,
+          User: true,
+          Ratings: true,
+        },
+      });
 
       res.json(apps);
       return;

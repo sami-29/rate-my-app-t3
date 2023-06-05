@@ -9,11 +9,8 @@ import Head from "next/head";
 
 dayjs.extend(relativeTime);
 
-const fetchApps = async (query: string) => {
-  const url =
-    query !== ""
-      ? `/api/apps/getAll?query=${encodeURIComponent(query)}`
-      : "/api/apps/getAll";
+const fetchApps = async () => {
+  const url = "/api/apps/getAll";
   const res = await fetch(url);
   const body = await res.json();
 
@@ -39,9 +36,7 @@ export default function Explore() {
   const router = useRouter();
   const { query } = router.query;
   const searchQuery = typeof query === "string" ? query : "";
-  const { data, isLoading } = useQuery(["getApps"], () => {
-    return fetchApps(searchQuery);
-  });
+  const { data, isLoading } = useQuery(["getApps"], fetchApps);
 
   const [filterType, setFilterType] = useState("All");
   const [sortBy, setSortBy] = useState("creationDate");
@@ -57,9 +52,28 @@ export default function Explore() {
 
   let filteredApps = data;
 
-  if (filterType !== "All") {
-    filteredApps = data.filter((app) => app.type === filterType);
+  // ...
+
+  // Filter based on the type and the search query
+  if (filterType !== "All" || searchQuery !== "") {
+    const lowerCaseSearchQuery = searchQuery.toLowerCase();
+
+    filteredApps = data.filter((app) => {
+      // Check if filterType is "All" or equals app.type
+      const isTypeMatch = filterType === "All" ? true : app.type === filterType;
+
+      // Check if the search query is in the title or description
+      const isInTitle = app.title.toLowerCase().includes(lowerCaseSearchQuery);
+      const isInDescription = app.description
+        .toLowerCase()
+        .includes(lowerCaseSearchQuery);
+
+      // The app passes the filter if the type matches and (the title or description contains the search query)
+      return isTypeMatch && (isInTitle || isInDescription);
+    });
   }
+
+  // ...
 
   let sortedApps = [...filteredApps];
 

@@ -11,11 +11,8 @@ export default function Navbar() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      router.push(`/explore?query=${searchQuery}`);
-    }
+  const handleSearch = (query: string) => {
+    router.push(`/explore?query=${query}`);
   };
 
   const { data, error, failureReason } = useQuery({
@@ -28,7 +25,6 @@ export default function Navbar() {
         }
       );
       const body = await res.json();
-      console.log(body);
       return body as Notification[];
     },
   });
@@ -102,8 +98,10 @@ export default function Navbar() {
             placeholder="Search..."
             className="input-bordered input input-sm mr-2 md:input-md "
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleSearch}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              handleSearch(e.target.value);
+            }}
           />
         </div>
         {!user.isSignedIn && (
@@ -132,7 +130,13 @@ export default function Navbar() {
                       d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                     />
                   </svg>
-                  <span className={` indicator-item mx-2 `}></span>
+                  <span
+                    className={`${
+                      !!data && data.length > 0
+                        ? "badge badge-primary badge-xs indicator-item"
+                        : ""
+                    }   `}
+                  ></span>
                 </div>
               </label>
 
@@ -151,7 +155,7 @@ export default function Navbar() {
                 {data?.map((notif) => {
                   return (
                     <li>
-                      <a className="flex h-auto max-w-[20rem] cursor-pointer flex-wrap overflow-hidden">
+                      <a className="flex h-auto max-w-[24rem] cursor-pointer flex-wrap overflow-hidden">
                         {notif.content}
                       </a>
                     </li>

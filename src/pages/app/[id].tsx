@@ -11,6 +11,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useEffect, useState } from "react";
+import { formatViews } from "@/utils/formatViews";
 
 interface AppDetailsProps {
   app:
@@ -420,7 +421,7 @@ export default function AppDetails({ app, id }: AppDetailsProps) {
               . posted {dayjs().to(app.created_at)}
             </div>
           </div>
-          <div>{`Seen ${app.views} amount of times`}</div>
+          <div>{`${formatViews(app.views)}`}</div>
           <div className="min-h-[8rem] border border-info-content p-4">
             {app.description}
           </div>
